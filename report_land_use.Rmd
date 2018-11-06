@@ -1,0 +1,220 @@
+---
+title: "Report land-use data"
+author: "Vincent Pellissier"
+date: "5 November 2018"
+classoption: table
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+options(kableExtra.latex.load_packages = FALSE)
+options(warn = 0)
+library(readxl)
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+
+path_grassplot <- 'C:/Users/pellissi/Documents/grassplot'
+```
+
+This report provides information on the structure of the land-use information present in the GrassPlot dataset, along with the code used.
+
+## Dataset
+The master file (Grassplot 1.8.xlsx as of Nov. 5th 2018) contains five sheets:
+
+   * log book: tracking of the modifcations of the masterfile
+   * Data: list of plot data (part of the datasets) contributed to Grassplot, with info on the plot data (land-use data, environmnental data)
+   * datasets: list of the datasets contributed to Grassplot, with metadata on the datasets (nested or not, are compositional data present, are there any environmental data...)
+   * new references: new (?) references added to the data
+   * Consortium members: list of the consortium members along with info
+  
+The sheet containing land-use information at the plot level is the 'Data' sheet.
+As the last 11 columns (with LU information) have coding error (ex. decimal separator, characters in a numerical column, ...), these columns are read as text columns and will be corrected later.
+Note that when loading columns with a comma as separator as a text column, the comma is replaced by a period (for an unknown reason...)
+```{r, eval = F}
+# dataframe with all the informations at a plot level
+df <- read_excel(file.path(path_grassplot, "GrassPlot 1.8.xlsx" ),
+                 sheet = 'Data', 
+                 col_types = rep('guess', 94), rep('text', 11))
+dim(df)
+```
+
+```{r, echo = F}
+df <- readRDS(file.path(path_grassplot, 'Grassplot 1.8_Data.rds'))
+dim(df)
+```
+
+
+## Land-use information
+### Overview of the information available
+There are 11 columns containing potential information about land-use:
+```{r, echo = F}
+names(df)[95:104]
+```
+
+Some of these columns contains hardcoded NAs (*i.e.* as character chain, 'NA' or '[NA]') which can be replaced by proper NAs:
+```{r}
+df <- df %>%
+        mutate_at(.vars = c(95:104), funs(ifelse(. %in% c('NA', '[NA]'), NA, .)))
+```
+
+These columns are supposidely having information coded in a varying number of values, repectively 5, undetermined number, 2, 5, 2, 2, 2, 2, undertermined number, 2.
+In reality, the columns contain the following number of values:
+```{r, echo = F, message = F}
+kable(data.frame(c(5, NA, 2, 5, 2, 2, 2, 2, NA, 2),
+                 apply(df[,95:104], 2, function(x) length(na.omit(unique(x))))),
+      col.names = c('Expected number of values', 'Actual number of values'))%>%
+  column_spec(1:3, width = c('8cm', '3cm', '3cm'))
+```
+
+### Details on the land-use information available
+#### Land use (column 95 / column CQ)
+##### *Problems*
+This column contains 32 values instead of 5:
+```{r, echo = F}
+c(unique(df[,95]))
+```
+
+  * Some of the values are just typos (*e.g.* capital letter in the beginning, misspelling, extra verbose...).
+  * Some are actually two or more LU classes combined (*e.g.* grazed/natural...)
+  * Some are LU classes not listed (*e.g.* trampled, grazed/burnt)
+  * Some seems to indicate the absence of LU (*e.g.* 0t visible)
+  * Some are not comprehensible (*e.g.* LAS, P, L, N)
+   
+   
+##### *Suggestions*
+  * Fixing the typos
+  * Deciding whether it is better to have mixed classes, or 5 columns coded as binary variables. If the former is better, then one should homogeneize the way the mixed classed are coded. I suggest to stick to the original order, with different LU separated by a '/'. It is noteworthy that these binary columns already somehow exists (*i.e* there is already Grazing, Mowing, Ex-arable (= abandoned?) binary columns). See below for more details on these columns.
+  * Either adding classes to matches the new LU classes, matching with the closest class, or removing completely, providing there is no more info in Column 96 (LU details).
+  * Replacing by NA, are there is no LU visible
+
+#### Land use details (column 96 / column CR)
+##### *Problems*
+This columns contain 917 unique values, with various information, freely written by data provider.
+The information is not usable as such, as it is not standardized, for instance:
+```{r, echo = F}
+head(as.character(unlist(c(unique(df[,96])))))
+```
+
+##### *Suggestions*
+Manually create a lookup table to match this columns and the other. One should try to extract intensity information when possible.
+
+#### Mowing 0/1 (column 97 / column CS)
+##### *Problems*
+  * Some plots have impossible values ('?')
+  * Some plots have mown = 1 but are classified as abandoned or natural grassland in column 95
+  * Some plots with mown = 0 are classified as mown in column 95:
+  * Some plots with mown = NA are classified as mown in column 95
+```{r, echo=F}
+
+df%>%
+  group_by(`Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA)`, 
+           `Mowing (1/0)`)%>%
+  summarise(n=n())%>%
+  spread(`Mowing (1/0)`, n)%>%
+  kable()%>%
+  column_spec(1, width = c('8cm'))
+```
+
+##### *Suggestions*
+  * Deciding which column takes precedence (column 95 or binary column), and reclassify accordingly.
+  To do so, plots (or datasets) with discrepancies need to be identified and the original tables need to be manually    checked.
+  * Plots that are not mown should be identified with mown = 0 (*i.e* not NAs in this column)
+  
+#### Mowing frequency (column 98 / column CT)
+##### *Problems*
+Some values (4, 0.3, 0.03, 0.05, 0.1) do not match the values that should be present.
+In addition, some plots listed a mown = 0 have a mowing frequency:
+```{r, echo = F}
+df%>%
+  group_by(`Mowing frequency: cuts per year (2=2cut/yr; 1=1cut/yr; 0.5=1 cut/2 yr or 2 yr abandoned; 0.2=1 cut/5 yr or 5 yr abandones; 0=never mown)`, 
+           `Mowing (1/0)`)%>%
+  summarise(n=n())%>%
+  spread(`Mowing (1/0)`, n)%>%
+  kable()%>%
+  column_spec(1, width = c('8cm'))
+```
+
+##### *Suggestions*
+  * Checking in the column 96 if the frequency information can be corrected 
+  * Reclassifying plots with a mowing freaquency as mown = 1 (*i.e.* the frequency information takes precedences over the binary info. This rule should stand for all the frequency information)
+  * If no more info can be found, checking with Idoia
+  
+  
+#### Grazing (1/0) (column 99 / column CU)
+##### *Problems*
+  * Some plots have impossible values ('?', 'probably' or '2')
+  * Some plots with grazing = 1 are listed as abandoned, mown or natural grassland
+  * Some plots with grazing = NA are listed as grazed or mixed grazed
+
+```{r, echo = F}
+df%>%
+  group_by(`Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA)`, 
+           `Grazing (1/0)`)%>%
+  summarise(n=n())%>%
+  spread(`Grazing (1/0)`, n)%>%
+  kable()%>%
+  column_spec(1, width = c('8cm'))
+```
+
+##### *Suggestions*
+  * Decide which column takes precedence (column 95 or binary column), and reclassify accordingly. I have no strong opinion on that, we should check which information was provided first
+  * Plots that are not grazed should be identified with grazed = 0 (*i.e* not NAs in this column)
+  
+#### Grazing intensity
+##### *Problems*
+  * We have no information on the values that should be in this column
+  * Some information are coded as plain text
+  * Some plots with grazing = 1 have no grazing frequency:
+```{r, echo = F}
+df%>%
+  group_by(`Grazing intensity (0/1) 1= intensive grazing`, 
+           `Grazing (1/0)`)%>%
+  summarise(n=n())%>%
+  spread(`Grazing (1/0)`, n)%>%
+  kable()%>%
+  column_spec(1, width = c('8cm'))
+```
+
+##### *Suggestions*
+  * Checking what values should be there with Idoia
+
+#### Burning (1/0) (column 101 / column CW)
+##### *Problems*
+  * Plots classified as burnt (grazed, burnt and movn, burnt) have burn = NA
+```{r, echo = F}
+df%>%
+  group_by(`Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA)`, 
+           `Burning (1/0)`)%>%
+  summarise(n=n())%>%
+  spread(`Burning (1/0)`, n)%>%
+  kable()%>%
+  column_spec(1, width = c('8cm'))
+```
+
+##### *Suggestions*
+  * Reclassify those plots as burn = 1
+
+#### Ex arable (1/0) (column 102 / column CX)
+##### *Problems*
+  * Plots classified as abandonned have ex arable = 0 or ex arable = NA
+```{r, echo = F}
+df%>%
+  group_by(`Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA)`, 
+           `Ex arable (1/0)`)%>%
+  summarise(n=n())%>%
+  spread(`Ex arable (1/0)`, n)%>%
+  kable()%>%
+  column_spec(1, width = c('8cm'))
+```
+
+##### *Suggestions*
+  * Checking the definition of abandonement and ex arable used in the database
+  
+##### Ex arable years (column 103 / column CY) and Fertilized (1/0) (column 104 / column CZ)
+This column should be checked against the column 96 manually to ensure the validity of the data.
+Note that there are impossible values for the Fertilized column (0.3 and 0.5)
+If the data were provided as is by the data owner, there is not much we can do (the data owner could have provided that information without filling the information in column 96)

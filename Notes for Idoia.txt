@@ -1,0 +1,2 @@
+In Grassplot 1.8:
+ * Column CT and CV, the decimal separator needs to be harmonized (the most recent entries have a comma instead of a period)
