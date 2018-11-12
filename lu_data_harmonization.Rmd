@@ -1,0 +1,77 @@
+---
+title: "Land-use data harmonization"
+author: "Vincent Pellissier"
+date: "8 November 2018"
+classoption: table
+output:
+    html_document: default
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+options(kableExtra.latex.load_packages = FALSE)
+options(warn = 0)
+library(readxl)
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+
+path_grassplot <- 'C:/Users/vincent/Documents/grassplot'
+```
+This report explains the steps taken to correct the land-use data.
+The masterfile used is the version 1.8, as found on Novembre 8th 2018.
+The sheet in Grassplot 1.8.xlsx containing the LU information is the sheet 'datasets' and was read and saved as a .rds file to ease the process (faster loading)
+
+
+```{r, echo = T}
+df <- readRDS(file.path(path_grassplot, 'Grassplot 1.8_Data.rds'))
+df <- df %>%
+        mutate_at(.vars = c(95:104), funs(ifelse(. %in% c('NA', '[NA]'), NA, .)))
+```
+
+### Correction of the land use column
+The file lookup_table_LU.xlsx contains two sheets:
+    * global_land_use: lookuptable matching the values in column 95 with a new classification. This new classification contains the 5 original values (mown, grazed, abandoned, natural grassland, NA), or combinations of thereof (separated by '/') in case of a mixed land-use. This classification is to be discussed, but as it is can still be separated in binary variables if necessary.
+    * land_use_detail: lookup table between the column 96 and other column. This needs to be discussed further before I finalize the table.
+```{r}
+lut <- read_excel(file.path(path_grassplot, "lookup_table_LU.xlsx" ),
+                 sheet = 'global_land_use')
+```
+
+The global_land_use lookup table is used to harmonize the column 95.
+Note that a new column (land_use) is created to prevent unwanted information removal:
+```{r}
+df <- df %>%
+    left_join(lut, by = c("Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA)" = "old_classification"))
+```
+
+### Identification of problematic datasets
+In this step, we identify datasets with discrepancies to 
+    * Manually check in the original datasets
+    * Correct the discrepancies
+    
+#### Mowing and mowing intensity
+Datasets containing plots for which the land_use is mown (alone or in combination) and grazing or mowing intensity is 0 or NA
+```{r}
+
+df %>% 
+    filter(grepl("mown", land_use)) %>%
+    filter(`Mowing (1/0)` != '1' | 
+                         `Mowing frequency: cuts per year (2=2cut/yr; 1=1cut/yr; 0.5=1 cut/2 yr or 2 yr abandoned; 0.2=1 cut/5 yr or 5 yr abandones; 0=never mown)` == '0')%>%
+    distinct(`Dataset ID`)%>%
+    pull()
+```
+
+
+#### Grazing and Grazing intensity
+Datasets containing plots for which the land_use is grazed (alone or in combination) and grazing or mowing intensity is 0 or NA
+```{r}
+
+df %>% 
+    filter(grepl("grazed", land_use)) %>%
+    filter(`Grazing (1/0)` != '1' | 
+               `Grazing intensity (0/1) 1= intensive grazing` == '0')%>%
+    distinct(`Dataset ID`)%>%
+    pull()
+```

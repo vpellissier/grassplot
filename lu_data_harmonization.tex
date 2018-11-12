@@ -1,0 +1,210 @@
+\documentclass[table]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Land-use data harmonization},
+            pdfauthor={Vincent Pellissier},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{Land-use data harmonization}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{Vincent Pellissier}
+  \preauthor{\centering\large\emph}
+  \postauthor{\par}
+  \predate{\centering\large\emph}
+  \postdate{\par}
+  \date{8 November 2018}
+
+
+\begin{document}
+\maketitle
+
+This report explains the steps taken to correct the land-use data. The
+masterfile used is the version 1.8, as found on Novembre 8th 2018. The
+sheet in Grassplot 1.8.xlsx containing the LU information is the sheet
+`datasets' and was read and saved as a .rds file to ease the process
+(faster loading)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df <-}\StringTok{ }\KeywordTok{readRDS}\NormalTok{(}\KeywordTok{file.path}\NormalTok{(path_grassplot, }\StringTok{'Grassplot 1.8_Data.rds'}\NormalTok{))}
+\NormalTok{df <-}\StringTok{ }\NormalTok{df }\OperatorTok{%>%}
+\StringTok{        }\KeywordTok{mutate_at}\NormalTok{(}\DataTypeTok{.vars =} \KeywordTok{c}\NormalTok{(}\DecValTok{95}\OperatorTok{:}\DecValTok{104}\NormalTok{), }\KeywordTok{funs}\NormalTok{(}\KeywordTok{ifelse}\NormalTok{(. }\OperatorTok{%in%}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{'NA'}\NormalTok{, }\StringTok{'[NA]'}\NormalTok{), }\OtherTok{NA}\NormalTok{, .)))}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{Correction of the land use
+column}\label{correction-of-the-land-use-column}
+
+The file lookup\_table\_LU.xlsx contains two sheets: *
+global\_land\_use: lookuptable matching the values in column 95 with a
+new classification. This new classification contains the 5 original
+values (mown, grazed, abandoned, natural grassland, NA), or combinations
+of thereof (separated by `/') in case of a mixed land-use. This
+classification is to be discussed, but as it is can still be separated
+in binary variables if necessary. * land\_use\_detail: lookup table
+between the column 96 and other column. This needs to be discussed
+further before I finalize the table.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lut <-}\StringTok{ }\KeywordTok{read_excel}\NormalTok{(}\KeywordTok{file.path}\NormalTok{(path_grassplot, }\StringTok{"lookup_table_LU.xlsx"}\NormalTok{ ),}
+                 \DataTypeTok{sheet =} \StringTok{'global_land_use'}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+The global\_land\_use lookup table is used to harmonize the column 95.
+Note that a new column (land\_use) is created to prevent unwanted
+information removal:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df <-}\StringTok{ }\NormalTok{df }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(lut, }\DataTypeTok{by =} \KeywordTok{c}\NormalTok{(}\StringTok{"Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA)"}\NormalTok{ =}\StringTok{ "old_classification"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{Identification of problematic
+datasets}\label{identification-of-problematic-datasets}
+
+In this step, we identify datasets with discrepancies to * Manually
+check in the original datasets * Correct the discrepancies
+
+\paragraph{Mowing and mowing
+intensity}\label{mowing-and-mowing-intensity}
+
+Datasets containing plots for which the land\_use is mowing (alone or in
+combination) and grazing or mowing intensity is 0 or NA
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{filter}\NormalTok{(}\KeywordTok{grepl}\NormalTok{(}\StringTok{"mown"}\NormalTok{, land_use)) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{filter}\NormalTok{(}\StringTok{`}\DataTypeTok{Mowing (1/0)}\StringTok{`} \OperatorTok{!=}\StringTok{ '1'} \OperatorTok{|}\StringTok{ }
+\StringTok{               }\KeywordTok{is.na}\NormalTok{(}\StringTok{`}\DataTypeTok{Mowing (1/0)}\StringTok{`}\NormalTok{) }\OperatorTok{|}\StringTok{ }
+\StringTok{                         `}\DataTypeTok{Mowing frequency: cuts per year (2=2cut/yr; 1=1cut/yr; 0.5=1 cut/2 yr or 2 yr abandoned; 0.2=1 cut/5 yr or 5 yr abandones; 0=never mown)}\StringTok{`} \OperatorTok{==}\StringTok{ '0'} \OperatorTok{|}
+\StringTok{               }\KeywordTok{is.na}\NormalTok{(}\StringTok{`}\DataTypeTok{Mowing frequency: cuts per year (2=2cut/yr; 1=1cut/yr; 0.5=1 cut/2 yr or 2 yr abandoned; 0.2=1 cut/5 yr or 5 yr abandones; 0=never mown)}\StringTok{`}\NormalTok{))}\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{distinct}\NormalTok{(}\StringTok{`}\DataTypeTok{Dataset ID}\StringTok{`}\NormalTok{)}\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{pull}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1] "AS_A" "AT_A" "BG_A" "CH_A" "CH_B" "CH_C" "CZ_A" "CZ_B" "CZ_C" "CZ_H"
+## [11] "CZ_I" "DE_A" "DE_E" "DE_F" "DE_H" "DE_I" "DE_J" "DE_L" "DE_N" "DE_O"
+## [21] "DE_P" "ES_A" "ES_C" "EU_A" "EU_B" "EU_C" "EU_E" "EU_G" "EU_J" "FR_A"
+## [31] "HR_A" "HU_A" "HU_C" "IR_A" "IT_H" "IT_K" "JP_A" "LV_A" "NL_A" "PL_A"
+## [41] "PL_B" "PL_C" "PL_D" "RO_A" "RO_B" "RS_A" "RU_A" "TJ_A" "UA_C" "UA_D"
+## [51] "EU_K"
+\end{verbatim}
+
+
+\end{document}
