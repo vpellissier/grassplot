@@ -1,0 +1,840 @@
+\documentclass[table]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Report land-use data},
+            pdfauthor={Vincent Pellissier},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Report land-use data}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Vincent Pellissier}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{5 November 2018}
+
+
+\begin{document}
+\maketitle
+
+This report provides information on the structure of the land-use
+information present in the GrassPlot dataset, along with the code used.
+
+\subsection{Dataset}\label{dataset}
+
+The master file (Grassplot 1.8.xlsx as of Nov. 5th 2018) contains five
+sheets:
+
+\begin{itemize}
+\tightlist
+\item
+  log book: tracking of the modifcations of the masterfile
+\item
+  Data: list of plot data (part of the datasets) contributed to
+  Grassplot, with info on the plot data (land-use data, environmnental
+  data)
+\item
+  datasets: list of the datasets contributed to Grassplot, with metadata
+  on the datasets (nested or not, are compositional data present, are
+  there any environmental data\ldots{})
+\item
+  new references: new (?) references added to the data
+\item
+  Consortium members: list of the consortium members along with info
+\end{itemize}
+
+The sheet containing land-use information at the plot level is the
+`Data' sheet. As the last 11 columns (with LU information) have coding
+error (ex. decimal separator, characters in a numerical column,
+\ldots{}), these columns are read as text columns and will be corrected
+later. Note that when loading columns with a comma as separator as a
+text column, the comma is replaced by a period (for an unknown
+reason\ldots{})
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# dataframe with all the informations at a plot level}
+\NormalTok{df <-}\StringTok{ }\KeywordTok{read_excel}\NormalTok{(}\KeywordTok{file.path}\NormalTok{(path_grassplot, }\StringTok{"GrassPlot 1.8.xlsx"}\NormalTok{ ),}
+                 \DataTypeTok{sheet =} \StringTok{'Data'}\NormalTok{, }
+                 \DataTypeTok{col_types =} \KeywordTok{rep}\NormalTok{(}\StringTok{'guess'}\NormalTok{, }\DecValTok{94}\NormalTok{), }\KeywordTok{rep}\NormalTok{(}\StringTok{'text'}\NormalTok{, }\DecValTok{11}\NormalTok{))}
+\KeywordTok{dim}\NormalTok{(df)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 180077    104
+\end{verbatim}
+
+\subsection{Land-use information}\label{land-use-information}
+
+\subsubsection{Overview of the information
+available}\label{overview-of-the-information-available}
+
+There are 11 columns containing potential information about land-use:
+
+\begin{verbatim}
+##  [1] "Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA)"                                                        
+##  [2] "Land use detail (e.g. number of cuts or years since abandonment)"                                                                        
+##  [3] "Mowing (1/0)"                                                                                                                            
+##  [4] "Mowing frequency: cuts per year (2=2cut/yr; 1=1cut/yr; 0.5=1 cut/2 yr or 2 yr abandoned; 0.2=1 cut/5 yr or 5 yr abandones; 0=never mown)"
+##  [5] "Grazing (1/0)"                                                                                                                           
+##  [6] "Grazing intensity (0/1) 1= intensive grazing"                                                                                            
+##  [7] "Burning (1/0)"                                                                                                                           
+##  [8] "Ex arable (1/0)"                                                                                                                         
+##  [9] "Ex arable years (years since last ploughing)"                                                                                            
+## [10] "Fertilized (1/0)"
+\end{verbatim}
+
+Some of these columns contains hardcoded NAs (\emph{i.e.} as character
+chain, `NA' or `{[}NA{]}') which can be replaced by proper NAs:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df <-}\StringTok{ }\NormalTok{df }\OperatorTok{%>%}
+\StringTok{        }\KeywordTok{mutate_at}\NormalTok{(}\DataTypeTok{.vars =} \KeywordTok{c}\NormalTok{(}\DecValTok{95}\OperatorTok{:}\DecValTok{104}\NormalTok{), }\KeywordTok{funs}\NormalTok{(}\KeywordTok{ifelse}\NormalTok{(. }\OperatorTok{%in%}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{'NA'}\NormalTok{, }\StringTok{'[NA]'}\NormalTok{), }\OtherTok{NA}\NormalTok{, .)))}
+\end{Highlighting}
+\end{Shaded}
+
+These columns are supposidely having information coded in a varying
+number of values, repectively 5, undetermined number, 2, 5, 2, 2, 2, 2,
+undertermined number, 2. In reality, the columns contain the following
+number of values:
+
+\begin{tabular}{>{\raggedright\arraybackslash}p{8cm}|>{\raggedright\arraybackslash}p{3cm}|>{\raggedright\arraybackslash}p{3cm}}
+\hline
+  & Expected number of values & Actual number of values\\
+\hline
+Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA) & 5 & 32\\
+\hline
+Land use detail (e.g. number of cuts or years since abandonment) & NA & 917\\
+\hline
+Mowing (1/0) & 2 & 3\\
+\hline
+Mowing frequency: cuts per year (2=2cut/yr; 1=1cut/yr; 0.5=1 cut/2 yr or 2 yr abandoned; 0.2=1 cut/5 yr or 5 yr abandones; 0=never mown) & 5 & 9\\
+\hline
+Grazing (1/0) & 2 & 5\\
+\hline
+Grazing intensity (0/1) 1= intensive grazing & 2 & 14\\
+\hline
+Burning (1/0) & 2 & 3\\
+\hline
+Ex arable (1/0) & 2 & 2\\
+\hline
+Ex arable years (years since last ploughing) & NA & 5\\
+\hline
+Fertilized (1/0) & 2 & 4\\
+\hline
+\end{tabular}
+
+\subsubsection{Details on the land-use information
+available}\label{details-on-the-land-use-information-available}
+
+\paragraph{Land use (column 95 / column
+CQ)}\label{land-use-column-95-column-cq}
+
+\subparagraph{\texorpdfstring{\emph{Problems}}{Problems}}\label{problems}
+
+This column contains 32 values instead of 5:
+
+\begin{verbatim}
+## $`Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA)`
+##  [1] "grazed"                    "grazed, mown"             
+##  [3] "mown"                      "natural grassland"        
+##  [5] "abandoned"                 NA                         
+##  [7] "grazed/natural"            "grazed/mown"              
+##  [9] "grazing"                   "Abandoned"                
+## [11] "Mown and grazed"           "Mown"                     
+## [13] "mown and grazed"           "Natural grassland"        
+## [15] "mown/abandoned"            "grazed/abandoned"         
+## [17] "mown/grazed"               "abandoned?"               
+## [19] "LAS"                       "P"                        
+## [21] "L"                         "N"                        
+## [23] "grazedazed"                "grazed, burnt"            
+## [25] "burnt, abandoned"          "abandonment"              
+## [27] "abondonment"               "0 intensive grazing"      
+## [29] "0t visible"                "natural grassland, grazed"
+## [31] "grazed and mown"           "trampled"                 
+## [33] "irregularly mown"
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  Some of the values are just typos (\emph{e.g.} capital letter in the
+  beginning, misspelling, extra verbose\ldots{}).
+\item
+  Some are actually two or more LU classes combined (\emph{e.g.}
+  grazed/natural\ldots{})
+\item
+  Some are LU classes not listed (\emph{e.g.} trampled, grazed/burnt)
+\item
+  Some seems to indicate the absence of LU (\emph{e.g.} 0t visible)
+\item
+  Some are not comprehensible (\emph{e.g.} LAS, P, L, N)
+\end{itemize}
+
+\subparagraph{\texorpdfstring{\emph{Suggestions}}{Suggestions}}\label{suggestions}
+
+\begin{itemize}
+\tightlist
+\item
+  Fixing the typos
+\item
+  Deciding whether it is better to have mixed classes, or 5 columns
+  coded as binary variables. If the former is better, then one should
+  homogeneize the way the mixed classed are coded. I suggest to stick to
+  the original order, with different LU separated by a `/'. It is
+  noteworthy that these binary columns already somehow exists
+  (\emph{i.e} there is already Grazing, Mowing, Ex-arable (= abandoned?)
+  binary columns). See below for more details on these columns.
+\item
+  Either adding classes to matches the new LU classes, matching with the
+  closest class, or removing completely, providing there is no more info
+  in Column 96 (LU details).
+\item
+  Replacing by NA, are there is no LU visible
+\end{itemize}
+
+\paragraph{Land use details (column 96 / column
+CR)}\label{land-use-details-column-96-column-cr}
+
+\subparagraph{\texorpdfstring{\emph{Problems}}{Problems}}\label{problems-1}
+
+This columns contain 917 unique values, with various information, freely
+written by data provider. The information is not usable as such, as it
+is not standardized, for instance:
+
+\begin{verbatim}
+## [1] "very extensive grazing"                     
+## [2] NA                                           
+## [3] "mowing once a year at the end of July"      
+## [4] "Extensive grazing by goats"                 
+## [5] "Low intensity horse pasture, montane meadow"
+## [6] "Low intensity pasture (cattle, horses)"
+\end{verbatim}
+
+\subparagraph{\texorpdfstring{\emph{Suggestions}}{Suggestions}}\label{suggestions-1}
+
+Manually create a lookup table to match this columns and the other. One
+should try to extract intensity information when possible.
+
+\paragraph{Mowing 0/1 (column 97 / column
+CS)}\label{mowing-01-column-97-column-cs}
+
+\subparagraph{\texorpdfstring{\emph{Problems}}{Problems}}\label{problems-2}
+
+\begin{itemize}
+\tightlist
+\item
+  Some plots have impossible values (`?')
+\item
+  Some plots have mown = 1 but are classified as abandoned or natural
+  grassland in column 95
+\item
+  Some plots with mown = 0 are classified as mown in column 95:
+\item
+  Some plots with mown = NA are classified as mown in column 95
+\end{itemize}
+
+\begin{tabular}{>{\raggedright\arraybackslash}p{8cm}|r|r|r|r}
+\hline
+Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA) & ? & 0 & 1 & <NA>\\
+\hline
+0 intensive grazing & NA & NA & NA & 1\\
+\hline
+0t visible & NA & NA & NA & 2\\
+\hline
+abandoned & NA & 858 & 12 & 15194\\
+\hline
+Abandoned & NA & NA & NA & 67\\
+\hline
+abandoned? & NA & 6 & NA & NA\\
+\hline
+abandonment & NA & NA & NA & 1\\
+\hline
+abondonment & NA & NA & NA & 4\\
+\hline
+burnt, abandoned & NA & 13 & NA & NA\\
+\hline
+grazed & NA & 3794 & NA & 30153\\
+\hline
+grazed and mown & NA & NA & 4 & NA\\
+\hline
+grazed, burnt & NA & NA & NA & 26\\
+\hline
+grazed, mown & NA & NA & 128 & 12\\
+\hline
+grazed/abandoned & NA & NA & NA & 23\\
+\hline
+grazed/mown & NA & NA & NA & 15\\
+\hline
+grazed/natural & NA & NA & NA & 64\\
+\hline
+grazedazed & NA & NA & NA & 1\\
+\hline
+grazing & NA & NA & NA & 10\\
+\hline
+irregularly mown & NA & NA & 1 & NA\\
+\hline
+L & NA & NA & NA & 12\\
+\hline
+LAS & NA & NA & NA & 12\\
+\hline
+mown & NA & 4 & 430 & 6578\\
+\hline
+Mown & NA & NA & 34 & 2\\
+\hline
+mown and grazed & NA & NA & NA & 178\\
+\hline
+Mown and grazed & NA & NA & NA & 15\\
+\hline
+mown/abandoned & NA & NA & NA & 10\\
+\hline
+mown/grazed & NA & NA & 7 & NA\\
+\hline
+N & NA & NA & NA & 28\\
+\hline
+natural grassland & NA & 1562 & 4 & 104572\\
+\hline
+Natural grassland & NA & 17 & NA & NA\\
+\hline
+natural grassland, grazed & NA & NA & NA & 78\\
+\hline
+P & NA & NA & NA & 48\\
+\hline
+trampled & NA & 1 & NA & NA\\
+\hline
+NA & 6 & 22 & NA & 16068\\
+\hline
+\end{tabular}
+
+\subparagraph{\texorpdfstring{\emph{Suggestions}}{Suggestions}}\label{suggestions-2}
+
+\begin{itemize}
+\tightlist
+\item
+  Deciding which column takes precedence (column 95 or binary column),
+  and reclassify accordingly. To do so, plots (or datasets) with
+  discrepancies need to be identified and the original tables need to be
+  manually checked.
+\item
+  Plots that are not mown should be identified with mown = 0 (\emph{i.e}
+  not NAs in this column)
+\end{itemize}
+
+\paragraph{Mowing frequency (column 98 / column
+CT)}\label{mowing-frequency-column-98-column-ct}
+
+\subparagraph{\texorpdfstring{\emph{Problems}}{Problems}}\label{problems-3}
+
+Some values (4, 0.3, 0.03, 0.05, 0.1) do not match the values that
+should be present. In addition, some plots listed a mown = 0 have a
+mowing frequency:
+
+\begin{tabular}{>{\raggedright\arraybackslash}p{8cm}|r|r|r|r}
+\hline
+Mowing frequency: cuts per year (2=2cut/yr; 1=1cut/yr; 0.5=1 cut/2 yr or 2 yr abandoned; 0.2=1 cut/5 yr or 5 yr abandones; 0=never mown) & ? & 0 & 1 & <NA>\\
+\hline
+0 & NA & 468 & NA & NA\\
+\hline
+0.03 & NA & 16 & NA & NA\\
+\hline
+0.05 & NA & 159 & NA & NA\\
+\hline
+0.1 & NA & 30 & NA & NA\\
+\hline
+0.2 & NA & NA & 4 & NA\\
+\hline
+0.3 & NA & 4 & 8 & NA\\
+\hline
+0.5 & NA & NA & 31 & NA\\
+\hline
+1 & NA & 4 & 212 & NA\\
+\hline
+4 & NA & NA & 15 & NA\\
+\hline
+NA & 6 & 5596 & 350 & 173174\\
+\hline
+\end{tabular}
+
+\subparagraph{\texorpdfstring{\emph{Suggestions}}{Suggestions}}\label{suggestions-3}
+
+\begin{itemize}
+\tightlist
+\item
+  Checking in the column 96 if the frequency information can be
+  corrected
+\item
+  Reclassifying plots with a mowing freaquency as mown = 1 (\emph{i.e.}
+  the frequency information takes precedences over the binary info. This
+  rule should stand for all the frequency information)
+\item
+  If no more info can be found, checking with Idoia
+\end{itemize}
+
+\paragraph{Grazing (1/0) (column 99 / column
+CU)}\label{grazing-10-column-99-column-cu}
+
+\subparagraph{\texorpdfstring{\emph{Problems}}{Problems}}\label{problems-4}
+
+\begin{itemize}
+\tightlist
+\item
+  Some plots have impossible values (`?', `probably' or `2')
+\item
+  Some plots with grazing = 1 are listed as abandoned, mown or natural
+  grassland
+\item
+  Some plots with grazing = NA are listed as grazed or mixed grazed
+\end{itemize}
+
+\begin{tabular}{>{\raggedright\arraybackslash}p{8cm}|r|r|r|r|r|r}
+\hline
+Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA) & ? & 0 & 1 & 2 & probably & <NA>\\
+\hline
+0 intensive grazing & NA & NA & NA & NA & NA & 1\\
+\hline
+0t visible & NA & NA & NA & NA & NA & 2\\
+\hline
+abandoned & NA & 1645 & 38 & NA & NA & 14381\\
+\hline
+Abandoned & NA & NA & NA & NA & NA & 67\\
+\hline
+abandoned? & NA & 6 & NA & NA & NA & NA\\
+\hline
+abandonment & NA & NA & NA & NA & NA & 1\\
+\hline
+abondonment & NA & NA & NA & NA & NA & 4\\
+\hline
+burnt, abandoned & NA & NA & NA & NA & NA & 13\\
+\hline
+grazed & NA & NA & 5103 & 1 & NA & 28843\\
+\hline
+grazed and mown & NA & NA & NA & NA & NA & 4\\
+\hline
+grazed, burnt & NA & NA & 26 & NA & NA & NA\\
+\hline
+grazed, mown & NA & NA & 130 & NA & NA & 10\\
+\hline
+grazed/abandoned & NA & NA & NA & NA & NA & 23\\
+\hline
+grazed/mown & NA & NA & NA & NA & NA & 15\\
+\hline
+grazed/natural & NA & NA & NA & NA & NA & 64\\
+\hline
+grazedazed & NA & NA & NA & NA & NA & 1\\
+\hline
+grazing & NA & NA & NA & NA & NA & 10\\
+\hline
+irregularly mown & NA & NA & NA & NA & NA & 1\\
+\hline
+L & NA & NA & NA & NA & NA & 12\\
+\hline
+LAS & NA & NA & NA & NA & NA & 12\\
+\hline
+mown & NA & 176 & 39 & NA & 6 & 6791\\
+\hline
+Mown & NA & NA & 34 & NA & NA & 2\\
+\hline
+mown and grazed & NA & NA & NA & NA & NA & 178\\
+\hline
+Mown and grazed & NA & NA & NA & NA & NA & 15\\
+\hline
+mown/abandoned & NA & NA & NA & NA & NA & 10\\
+\hline
+mown/grazed & 7 & NA & NA & NA & NA & NA\\
+\hline
+N & NA & 28 & NA & NA & NA & NA\\
+\hline
+natural grassland & NA & 1349 & 60 & NA & NA & 104729\\
+\hline
+Natural grassland & NA & 17 & NA & NA & NA & NA\\
+\hline
+natural grassland, grazed & NA & NA & NA & NA & NA & 78\\
+\hline
+P & NA & NA & NA & NA & NA & 48\\
+\hline
+trampled & NA & NA & NA & NA & NA & 1\\
+\hline
+NA & 6 & 17 & NA & NA & NA & 16073\\
+\hline
+\end{tabular}
+
+\subparagraph{\texorpdfstring{\emph{Suggestions}}{Suggestions}}\label{suggestions-4}
+
+\begin{itemize}
+\tightlist
+\item
+  Decide which column takes precedence (column 95 or binary column), and
+  reclassify accordingly. I have no strong opinion on that, we should
+  check which information was provided first
+\item
+  Plots that are not grazed should be identified with grazed = 0
+  (\emph{i.e} not NAs in this column)
+\end{itemize}
+
+\paragraph{Grazing intensity}\label{grazing-intensity}
+
+\subparagraph{\texorpdfstring{\emph{Problems}}{Problems}}\label{problems-5}
+
+\begin{itemize}
+\tightlist
+\item
+  We have no information on the values that should be in this column
+\item
+  Some information are coded as plain text
+\item
+  Some plots with grazing = 1 have no grazing frequency:
+\end{itemize}
+
+\begin{tabular}{>{\raggedright\arraybackslash}p{8cm}|r|r|r|r|r|r}
+\hline
+Grazing intensity (0/1) 1= intensive grazing & ? & 0 & 1 & 2 & probably & <NA>\\
+\hline
+0 & NA & 1611 & 219 & NA & NA & NA\\
+\hline
+0.1 & NA & NA & 202 & NA & NA & NA\\
+\hline
+0.25 & NA & NA & 448 & NA & NA & NA\\
+\hline
+0.3 & NA & NA & 92 & NA & NA & NA\\
+\hline
+0.5 & NA & NA & 749 & NA & NA & 8\\
+\hline
+0.75 & NA & NA & 148 & NA & NA & NA\\
+\hline
+1 & NA & NA & 2961 & NA & NA & NA\\
+\hline
+2 & NA & NA & 28 & NA & NA & NA\\
+\hline
+3 & NA & NA & 31 & NA & NA & NA\\
+\hline
+7 & NA & NA & 4 & NA & NA & NA\\
+\hline
+high & NA & NA & 12 & NA & NA & NA\\
+\hline
+low & NA & NA & 15 & NA & NA & NA\\
+\hline
+middle & NA & NA & 30 & NA & NA & NA\\
+\hline
+overgrazing & NA & NA & 3 & NA & NA & NA\\
+\hline
+NA & 13 & 1627 & 488 & 1 & 6 & 171381\\
+\hline
+\end{tabular}
+
+\subparagraph{\texorpdfstring{\emph{Suggestions}}{Suggestions}}\label{suggestions-5}
+
+\begin{itemize}
+\tightlist
+\item
+  Checking what values should be there with Idoia
+\end{itemize}
+
+\paragraph{Burning (1/0) (column 101 / column
+CW)}\label{burning-10-column-101-column-cw}
+
+\subparagraph{\texorpdfstring{\emph{Problems}}{Problems}}\label{problems-6}
+
+\begin{itemize}
+\tightlist
+\item
+  Plots classified as burnt (grazed, burnt and movn, burnt) have burn =
+  NA
+\end{itemize}
+
+\begin{tabular}{>{\raggedright\arraybackslash}p{8cm}|r|r|r|r}
+\hline
+Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA) & ? & 0 & 1 & <NA>\\
+\hline
+0 intensive grazing & NA & NA & NA & 1\\
+\hline
+0t visible & NA & NA & NA & 2\\
+\hline
+abandoned & NA & 658 & 29 & 15377\\
+\hline
+Abandoned & NA & NA & NA & 67\\
+\hline
+abandoned? & 6 & NA & NA & NA\\
+\hline
+abandonment & NA & NA & NA & 1\\
+\hline
+abondonment & NA & NA & NA & 4\\
+\hline
+burnt, abandoned & NA & NA & NA & 13\\
+\hline
+grazed & NA & 3649 & 52 & 30246\\
+\hline
+grazed and mown & NA & 4 & NA & NA\\
+\hline
+grazed, burnt & NA & NA & NA & 26\\
+\hline
+grazed, mown & NA & 7 & 14 & 119\\
+\hline
+grazed/abandoned & NA & NA & 11 & 12\\
+\hline
+grazed/mown & NA & NA & NA & 15\\
+\hline
+grazed/natural & NA & NA & NA & 64\\
+\hline
+grazedazed & NA & NA & NA & 1\\
+\hline
+grazing & NA & NA & NA & 10\\
+\hline
+irregularly mown & NA & 1 & NA & NA\\
+\hline
+L & NA & NA & NA & 12\\
+\hline
+LAS & NA & NA & NA & 12\\
+\hline
+mown & NA & 361 & 11 & 6640\\
+\hline
+Mown & NA & 34 & NA & 2\\
+\hline
+mown and grazed & NA & NA & NA & 178\\
+\hline
+Mown and grazed & NA & NA & NA & 15\\
+\hline
+mown/abandoned & NA & NA & NA & 10\\
+\hline
+mown/grazed & NA & 7 & NA & NA\\
+\hline
+N & NA & 28 & NA & NA\\
+\hline
+natural grassland & NA & 1596 & 17 & 104525\\
+\hline
+Natural grassland & NA & 17 & NA & NA\\
+\hline
+natural grassland, grazed & NA & NA & NA & 78\\
+\hline
+P & NA & NA & NA & 48\\
+\hline
+trampled & NA & 1 & NA & NA\\
+\hline
+NA & NA & 62 & 3 & 16031\\
+\hline
+\end{tabular}
+
+\subparagraph{\texorpdfstring{\emph{Suggestions}}{Suggestions}}\label{suggestions-6}
+
+\begin{itemize}
+\tightlist
+\item
+  Reclassify those plots as burn = 1
+\end{itemize}
+
+\paragraph{Ex arable (1/0) (column 102 / column
+CX)}\label{ex-arable-10-column-102-column-cx}
+
+\subparagraph{\texorpdfstring{\emph{Problems}}{Problems}}\label{problems-7}
+
+\begin{itemize}
+\tightlist
+\item
+  Plots classified as abandonned have ex arable = 0 or ex arable = NA
+\end{itemize}
+
+\begin{tabular}{>{\raggedright\arraybackslash}p{8cm}|r|r|r}
+\hline
+Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA) & 0 & 1 & <NA>\\
+\hline
+0 intensive grazing & NA & NA & 1\\
+\hline
+0t visible & NA & NA & 2\\
+\hline
+abandoned & 317 & 17 & 15730\\
+\hline
+Abandoned & NA & NA & 67\\
+\hline
+abandoned? & NA & NA & 6\\
+\hline
+abandonment & NA & NA & 1\\
+\hline
+abondonment & NA & NA & 4\\
+\hline
+burnt, abandoned & NA & NA & 13\\
+\hline
+grazed & 3081 & 6 & 30860\\
+\hline
+grazed and mown & NA & NA & 4\\
+\hline
+grazed, burnt & NA & NA & 26\\
+\hline
+grazed, mown & NA & 20 & 120\\
+\hline
+grazed/abandoned & NA & NA & 23\\
+\hline
+grazed/mown & NA & NA & 15\\
+\hline
+grazed/natural & NA & NA & 64\\
+\hline
+grazedazed & NA & NA & 1\\
+\hline
+grazing & NA & NA & 10\\
+\hline
+irregularly mown & 1 & NA & NA\\
+\hline
+L & NA & NA & 12\\
+\hline
+LAS & NA & NA & 12\\
+\hline
+mown & 153 & 30 & 6829\\
+\hline
+Mown & NA & NA & 36\\
+\hline
+mown and grazed & NA & NA & 178\\
+\hline
+Mown and grazed & NA & NA & 15\\
+\hline
+mown/abandoned & NA & NA & 10\\
+\hline
+mown/grazed & NA & NA & 7\\
+\hline
+N & NA & NA & 28\\
+\hline
+natural grassland & 1354 & 13 & 104771\\
+\hline
+Natural grassland & NA & NA & 17\\
+\hline
+natural grassland, grazed & NA & NA & 78\\
+\hline
+P & NA & NA & 48\\
+\hline
+trampled & 1 & NA & NA\\
+\hline
+NA & 37 & 11 & 16048\\
+\hline
+\end{tabular}
+
+\subparagraph{\texorpdfstring{\emph{Suggestions}}{Suggestions}}\label{suggestions-7}
+
+\begin{itemize}
+\tightlist
+\item
+  Checking the definition of abandonement and ex arable used in the
+  database
+\end{itemize}
+
+\subparagraph{Ex arable years (column 103 / column CY) and Fertilized
+(1/0) (column 104 / column
+CZ)}\label{ex-arable-years-column-103-column-cy-and-fertilized-10-column-104-column-cz}
+
+This column should be checked against the column 96 manually to ensure
+the validity of the data. Note that there are impossible values for the
+Fertilized column (0.3 and 0.5) If the data were provided as is by the
+data owner, there is not much we can do (the data owner could have
+provided that information without filling the information in column 96)
+
+
+\end{document}
