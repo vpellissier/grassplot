@@ -3,8 +3,8 @@ title: "Land-use data harmonization"
 author: "Vincent Pellissier"
 date: "8 November 2018"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 classoption: table
 ---
 
@@ -22,9 +22,8 @@ library(kableExtra)
 path_grassplot <- 'C:/Users/pellissi/Documents/grassplot'
 ```
 This report explains the steps taken to correct the land-use data.
-The masterfile used is the version 1.8, as found on Novembre 8th 2018.
+The masterfile used is the version 1.8, as found on November 8th 2018.
 The sheet in Grassplot 1.8.xlsx containing the LU information is the sheet 'datasets' and was read and saved as a .rds file to ease the process (faster loading)
-
 
 ```{r, echo = T}
 df <- readRDS(file.path(path_grassplot, 'Grassplot 1.8_Data.rds'))
@@ -63,22 +62,20 @@ In this step, we identify datasets with discrepancies between the new binary col
   * Correct the discrepancies.
     
 #### Mowing and mowing intensity
-Datasets containing plots for which mowing intensity > 0 & mown != 1) (here and after, we refer to the new binary columns)
-```{r}
+##### *Datasets containing plots for which mowing intensity > 0 & mown != 1 (here and after, we refer to the new binary columns)*
+```{r, echo = F}
 df %>% 
   filter(`mown` != 1 & `mowing_frequency` != '0' )%>%
     distinct(`Dataset ID`)%>%
     pull()
 ```
 
-  * EU_K contains **XX** plots classified as natural_grassland which have a mowing frequency. These plots will also be classified as mown
-  * EU_K contains **XX** plot classified as abandoned which have a mowing frequency. Only the plot with a frequency >= 0.2 will be classified as mown (abandoned less than 5 years).
-```{r}
-df[df$`Dataset ID` == 'EU_K',] %<>% 
-  mutate(mown = ifelse(!is.na(mowing_frequency), 1, 0))
+  * EU_K contains resp. 4 and 4 plots classified as natural_grassland with a mowing frequency of resp. 0.03 and 4. Only the plots with a frequency >= 0.2 will be classified as mown (abandoned less than 5 years).
+  * EU_K contains resp. 12, 84, 30, 4 and 12 plots classified as abandoned with a mowing frequency of resp. 0.03, 0.05, 0.1, 0.2, 0.3. Only the plots with a frequency >= 0.2 will be classified as mown (abandoned less than 5 years).
 
-df[df$`Dataset ID` == 'EU_K',] %<>% 
-  mutate(mown = ifelse((is.element(mowing_frequency, c('0.03', '0.05')) | is.na(mowing_frequency)), 0, 1))
+```{r}
+df[df$`Dataset ID` == 'EU_K' & df$mowing_frequency %in% c('4', '1', '0.5', '0.3', '0.2'),] %<>% 
+  mutate(mown = 1)
 ```
 
   * CZ_J contains plot classified as abandoned which have a mowing frequency == 0.05. These will not be classified as mown. (I could not find the original land-use information in CZ_J.xls)
@@ -86,8 +83,8 @@ df[df$`Dataset ID` == 'EU_K',] %<>%
 
 
 #### Grazing and Grazing intensity
-Datasets containing plots for which grazing intensity > 0 & grazed != 1)
-```{r}
+##### *Datasets containing plots for which grazing intensity > 0 & grazed != 1:*
+```{r, echo = F}
 df %>% 
     filter(`grazed` != 1 & `grazing_intensity` != '0')%>%
     distinct(`Dataset ID`)%>%
@@ -130,42 +127,109 @@ df[df$`Dataset ID` == 'EU_K' & df$grazing_intensity %in% '0.5',] %<>%
 In this step, we identify and correct discrepancies between the newly created and corrected binary column, and the former ones
 
 #### Mowing
-There are:
-
-  * 38 plots with mown == 1 & Mowing (1/0) == 0
-  * 148 plots with mown == 0 & Mowing (1/0) == 1
-  * 6810 plots with mown == 1 & Mowing (1/0) = NA
-  * 6 plots with mown = NA & Mowing (1/0) == '?'
 ```{r, echo = F}
 df%>%
   group_by(`mown`, `Mowing (1/0)`)%>%
   summarise(n=n())%>%
   spread(`mown`, n)%>%
-  kable()
-```
- 
-   
-Datasets containing plots with mown == 1 & Mowing (1/0) == 0 (new vs former column):
-```{r}
-df %>% 
-  filter(`mown` == 1 & `Mowing (1/0)` == '1' )%>%
-    distinct(`Dataset ID`)%>%
-    pull()
-```
-  
-  
-Datasets containing plots with mown == 0 & Mowing (1/0) == 1 (new vs former column):
-```{r}
-df %>% 
-  filter(`mown` == 0 & `Mowing (1/0)` == '0' )%>%
-    distinct(`Dataset ID`)%>%
-    pull()
+  kable(caption = 'Contingency table of columns mown and Mowing (1/0)')
 ```
 
-Datasets containing plots with mown == 1 & Mowing (1/0) = NA (new vs former column)
-```{r}
+There are:
+```{r, echo = F}
+nb_new1_old0 <- df %>%
+  filter(`mown` == 1 & `Mowing (1/0)` == '0' )%>%
+  distinct(`GrassPlot ID of plot`)%>% count()
+
+nb_new0_old1 <- df %>%
+  filter(`mown` == 0 & `Mowing (1/0)` == '1' )%>%
+  distinct(`GrassPlot ID of plot`)%>% count()
+
+nb_new1_oldNA <- df %>%
+  filter(`mown` == 1 & is.na(`Mowing (1/0)`))%>%
+  distinct(`GrassPlot ID of plot`)%>% count()
+
+nb_newNA_oldunk <- df %>%
+  filter(is.na(`mown`) & `Mowing (1/0)` == '?')%>%
+  distinct(`GrassPlot ID of plot`)%>% count()
+
+```
+
+  * `r nb_new1_old0` plot with mown == 1 & Mowing (1/0) == 0
+  * `r nb_new0_old1` plots with mown == 0 & Mowing (1/0) == 1
+  * `r nb_new1_oldNA` plots with mown == 1 & Mowing (1/0) = NA
+  * `r nb_newNA_oldunk` plots with mown = NA & Mowing (1/0) == '?'
+```{r, echo = F}
+rm(list = c('nb_new1_old0', 'nb_new0_old1', 'nb_new1_oldNA', 'nb_newNA_oldunk'))
+```
+
+##### *Datasets containing plots with mown == 1 & Mowing (1/0) == 0 (new vs former column):*
+```{r, echo = F}
+df %>% 
+  filter(`mown` == 1 & `Mowing (1/0)` == '0' )%>%
+    distinct(`Dataset ID`)%>%
+    pull()
+```
+These 8 plots corresponds to 4 plots reclassified as mown == 1 earlier in EU_K and 4 plots classified as mown == 1 but misclassified in the former Mowing (1/0) column. The classifiaction of these plots is left untouched
+
+##### *Datasets containing plots with mown = NA & Mowing (1/0) == ? (new vs former column):*
+```{r, echo = F}
+df %>% 
+  filter(is.na(`mown`) & `Mowing (1/0)` == '?')%>%
+    distinct(`Dataset ID`)%>%
+    pull()
+```
+No additional information could be found, so the plots are left with mown = NA
+
+##### *Datasets containing plots with mown == 1 & Mowing (1/0) = NA (new vs former column):*
+```{r, echo = F}
 df %>% 
   filter(`mown` == 1 & is.na(`Mowing (1/0)`))%>%
     distinct(`Dataset ID`)%>%
     pull()
 ```
+These plots are all classified as mown (or combination of mown other land-use) in the original land use column of the masterfile and are left classified as mown == 1.
+
+
+#### Mowing
+```{r, echo = F}
+df%>%
+  group_by(`grazed`, `Grazing (1/0)`)%>%
+  summarise(n=n())%>%
+  spread(`grazed`, n)%>%
+  kable(caption = 'Contingency table of columns grazed and Grazing (1/0)')
+```
+
+There are:
+```{r, echo = F}
+nb_new0_old1 <- df %>%
+  filter(`grazed` == '0' & `Grazing (1/0)` == '1' )%>%
+  distinct(`GrassPlot ID of plot`)%>% count()
+nb_new0_oldprob <- df %>%
+  filter(`grazed` == 0 & `Grazing (1/0)` == 'probably' )%>%
+  distinct(`GrassPlot ID of plot`)%>% count()
+
+nb_new1_oldunk <- df %>%
+  filter(`grazed` == 1 & `Grazing (1/0)` == '?')%>%
+  distinct(`GrassPlot ID of plot`)%>% count()
+nb_new1_old2 <- df %>%
+  filter(`grazed` == 1 & `Grazing (1/0)` == '2')%>%
+  distinct(`GrassPlot ID of plot`)%>% count()
+nb_new1_oldNA <- df %>%
+  filter(`grazed` == 1 & is.na(`Grazing (1/0)`))%>%
+  distinct(`GrassPlot ID of plot`)%>% count()
+
+nb_newNA_oldunk <- df %>%
+  filter(is.na(`grazed`) & `Grazing (1/0)` == '?')%>%
+  distinct(`GrassPlot ID of plot`)%>% count()
+```
+
+  * `r nb_new0_old1` plot with grazed == 0 & Grazing (1/0) == '1'
+  * `r nb_new0_oldprob` plot with grazed == 0 & Grazing (1/0) == 'probably'
+  * `r nb_new1_oldunk` plots with grazed == 1 & Grazing (1/0) == '?'
+  * `r nb_new1_old2` plots with grazed == 1 & Grazing (1/0) == '2'
+  * `r nb_new1_oldNA` plots with grazed == 1 & Grazing (1/0) = NA
+  * `r nb_newNA_oldunk` plots with grazed = NA & Grazing (1/0) == '?'
+
+**NOTE: the contingency table and figures reported above do not match because there is duplicated ID in the column `Grassplot ID of plot`.
+The following ID are duplicated `r unique(df[which(duplicated(df[,3])),3])%>%pull()`**

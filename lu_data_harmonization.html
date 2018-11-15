@@ -128,7 +128,7 @@ $(document).ready(function () {
 </div>
 
 
-<p>This report explains the steps taken to correct the land-use data. The masterfile used is the version 1.8, as found on Novembre 8th 2018. The sheet in Grassplot 1.8.xlsx containing the LU information is the sheet ‘datasets’ and was read and saved as a .rds file to ease the process (faster loading)</p>
+<p>This report explains the steps taken to correct the land-use data. The masterfile used is the version 1.8, as found on November 8th 2018. The sheet in Grassplot 1.8.xlsx containing the LU information is the sheet ‘datasets’ and was read and saved as a .rds file to ease the process (faster loading)</p>
 <pre class="r"><code>df &lt;- readRDS(file.path(path_grassplot, 'Grassplot 1.8_Data.rds'))
 df &lt;- df %&gt;%
         mutate_at(.vars = c(95:104), funs(ifelse(. %in% c('NA', '[NA]'), NA, .)))</code></pre>
@@ -156,32 +156,24 @@ df &lt;- df %&gt;%
 </ul>
 <div id="mowing-and-mowing-intensity" class="section level4">
 <h4>Mowing and mowing intensity</h4>
-<p>Datasets containing plots for which mowing intensity &gt; 0 &amp; mown != 1) (here and after, we refer to the new binary columns)</p>
-<pre class="r"><code>df %&gt;% 
-  filter(`mown` != 1 &amp; `mowing_frequency` != '0' )%&gt;%
-    distinct(`Dataset ID`)%&gt;%
-    pull()</code></pre>
+<div id="datasets-containing-plots-for-which-mowing-intensity-0-mown-1-here-and-after-we-refer-to-the-new-binary-columns" class="section level5">
+<h5><em>Datasets containing plots for which mowing intensity &gt; 0 &amp; mown != 1 (here and after, we refer to the new binary columns)</em></h5>
 <pre><code>## [1] &quot;EU_K&quot; &quot;CZ_J&quot;</code></pre>
 <ul>
-<li>EU_K contains <strong>XX</strong> plots classified as natural_grassland which have a mowing frequency. These plots will also be classified as mown</li>
-<li>EU_K contains <strong>XX</strong> plot classified as abandoned which have a mowing frequency. Only the plot with a frequency &gt;= 0.2 will be classified as mown (abandoned less than 5 years).</li>
+<li>EU_K contains resp. 4 and 4 plots classified as natural_grassland with a mowing frequency of resp. 0.03 and 4. Only the plots with a frequency &gt;= 0.2 will be classified as mown (abandoned less than 5 years).</li>
+<li>EU_K contains resp. 12, 84, 30, 4 and 12 plots classified as abandoned with a mowing frequency of resp. 0.03, 0.05, 0.1, 0.2, 0.3. Only the plots with a frequency &gt;= 0.2 will be classified as mown (abandoned less than 5 years).</li>
 </ul>
-<pre class="r"><code>df[df$`Dataset ID` == 'EU_K',] %&lt;&gt;% 
-  mutate(mown = ifelse(!is.na(mowing_frequency), 1, 0))
-
-df[df$`Dataset ID` == 'EU_K',] %&lt;&gt;% 
-  mutate(mown = ifelse((is.element(mowing_frequency, c('0.03', '0.05')) | is.na(mowing_frequency)), 0, 1))</code></pre>
+<pre class="r"><code>df[df$`Dataset ID` == 'EU_K' &amp; df$mowing_frequency %in% c('4', '1', '0.5', '0.3', '0.2'),] %&lt;&gt;% 
+  mutate(mown = 1)</code></pre>
 <ul>
 <li>CZ_J contains plot classified as abandoned which have a mowing frequency == 0.05. These will not be classified as mown. (I could not find the original land-use information in CZ_J.xls)</li>
 </ul>
 </div>
+</div>
 <div id="grazing-and-grazing-intensity" class="section level4">
 <h4>Grazing and Grazing intensity</h4>
-<p>Datasets containing plots for which grazing intensity &gt; 0 &amp; grazed != 1)</p>
-<pre class="r"><code>df %&gt;% 
-    filter(`grazed` != 1 &amp; `grazing_intensity` != '0')%&gt;%
-    distinct(`Dataset ID`)%&gt;%
-    pull()</code></pre>
+<div id="datasets-containing-plots-for-which-grazing-intensity-0-grazed-1" class="section level5">
+<h5><em>Datasets containing plots for which grazing intensity &gt; 0 &amp; grazed != 1:</em></h5>
 <pre><code>## [1] &quot;IR_A&quot; &quot;PL_D&quot; &quot;TR_B&quot; &quot;UA_G&quot; &quot;EU_K&quot;</code></pre>
 <ul>
 <li>IR_A contains 34 plots classified as mown which have a grazing_intensity == 0.1. These plots will be classified as grazed (and also remain mown as indicated in the original database IR_A.xls). <strong>Note for Idoia</strong> In the original DB, the grazing intensity is noted as 1, 2, 3. Is it correct that it stands for low, medium and high intensity, and hence translate as 0.1, 0.5, 1 in the master file?</li>
@@ -211,12 +203,16 @@ df[df$`Dataset ID` == 'EU_K',] %&lt;&gt;%
   mutate(grazed = 1)</code></pre>
 </div>
 </div>
+</div>
 <div id="matching-new-and-old-binary-columns" class="section level3">
 <h3>Matching new and old binary columns</h3>
 <p>In this step, we identify and correct discrepancies between the newly created and corrected binary column, and the former ones</p>
 <div id="mowing" class="section level4">
 <h4>Mowing</h4>
 <table>
+<caption>
+Contingency table of columns mown and Mowing (1/0)
+</caption>
 <thead>
 <tr>
 <th style="text-align:left;">
@@ -253,10 +249,10 @@ NA
 0
 </td>
 <td style="text-align:right;">
-6217
+6247
 </td>
 <td style="text-align:right;">
-38
+8
 </td>
 <td style="text-align:right;">
 22
@@ -267,10 +263,10 @@ NA
 1
 </td>
 <td style="text-align:right;">
-142
+NA
 </td>
 <td style="text-align:right;">
-478
+620
 </td>
 <td style="text-align:right;">
 NA
@@ -292,29 +288,152 @@ NA
 </tr>
 </tbody>
 </table>
-<p>Datasets containing plots with mown == 1 &amp; Mowing (1/0) == 0 (new vs former column)</p>
-<pre class="r"><code>df %&gt;% 
-  filter(`mown` == 1 &amp; `Mowing (1/0)` == '1' )%&gt;%
-    distinct(`Dataset ID`)%&gt;%
-    pull()</code></pre>
-<pre><code>## [1] &quot;AS_A&quot; &quot;IR_A&quot; &quot;PL_A&quot; &quot;PL_D&quot; &quot;TJ_A&quot; &quot;EU_K&quot; &quot;AT_D&quot; &quot;CZ_J&quot;</code></pre>
-<p>Datasets containing plots with mown == 0 &amp; Mowing (1/0) == 1 (new vs former column)</p>
-<pre class="r"><code>df %&gt;% 
-  filter(`mown` == 0 &amp; `Mowing (1/0)` == '0' )%&gt;%
-    distinct(`Dataset ID`)%&gt;%
-    pull()</code></pre>
-<pre><code>##  [1] &quot;AS_A&quot; &quot;CH_D&quot; &quot;DE_R&quot; &quot;HU_B&quot; &quot;IR_A&quot; &quot;KZ_A&quot; &quot;MN_B&quot; &quot;MN_C&quot; &quot;NP_A&quot; &quot;PL_A&quot;
-## [11] &quot;RU_I&quot; &quot;RU_K&quot; &quot;TJ_A&quot; &quot;TR_B&quot; &quot;UA_H&quot; &quot;UA_I&quot; &quot;UA_J&quot; &quot;EU_K&quot; &quot;AT_D&quot; &quot;CZ_J&quot;</code></pre>
-<p>Datasets containing plots with mown == 1 &amp; Mowing (1/0) = NA (new vs former column)</p>
-<pre class="r"><code>df %&gt;% 
-  filter(`mown` == 1 &amp; is.na(`Mowing (1/0)`))%&gt;%
-    distinct(`Dataset ID`)%&gt;%
-    pull()</code></pre>
+<p>There are:</p>
+<ul>
+<li>8 plot with mown == 1 &amp; Mowing (1/0) == 0</li>
+<li>0 plots with mown == 0 &amp; Mowing (1/0) == 1</li>
+<li>6810 plots with mown == 1 &amp; Mowing (1/0) = NA</li>
+<li>6 plots with mown = NA &amp; Mowing (1/0) == ‘?’</li>
+</ul>
+<div id="datasets-containing-plots-with-mown-1-mowing-10-0-new-vs-former-column" class="section level5">
+<h5><em>Datasets containing plots with mown == 1 &amp; Mowing (1/0) == 0 (new vs former column):</em></h5>
+<pre><code>## [1] &quot;EU_K&quot;</code></pre>
+<p>These 8 plots corresponds to 4 plots reclassified as mown == 1 earlier in EU_K and 4 plots classified as mown == 1 but misclassified in the former Mowing (1/0) column. The classifiaction of these plots is left untouched</p>
+</div>
+<div id="datasets-containing-plots-with-mown-na-mowing-10-new-vs-former-column" class="section level5">
+<h5><em>Datasets containing plots with mown = NA &amp; Mowing (1/0) == ? (new vs former column):</em></h5>
+<pre><code>## [1] &quot;PL_A&quot;</code></pre>
+<p>No additional information could be found, so the plots are left with mown = NA</p>
+</div>
+<div id="datasets-containing-plots-with-mown-1-mowing-10-na-new-vs-former-column" class="section level5">
+<h5><em>Datasets containing plots with mown == 1 &amp; Mowing (1/0) = NA (new vs former column):</em></h5>
 <pre><code>##  [1] &quot;AT_A&quot; &quot;BG_A&quot; &quot;CH_A&quot; &quot;CH_B&quot; &quot;CH_C&quot; &quot;CZ_A&quot; &quot;CZ_B&quot; &quot;CZ_C&quot; &quot;CZ_H&quot; &quot;CZ_I&quot;
 ## [11] &quot;DE_A&quot; &quot;DE_E&quot; &quot;DE_F&quot; &quot;DE_H&quot; &quot;DE_I&quot; &quot;DE_J&quot; &quot;DE_L&quot; &quot;DE_N&quot; &quot;DE_O&quot; &quot;DE_P&quot;
 ## [21] &quot;ES_A&quot; &quot;ES_C&quot; &quot;EU_A&quot; &quot;EU_B&quot; &quot;EU_C&quot; &quot;EU_E&quot; &quot;EU_G&quot; &quot;EU_J&quot; &quot;FR_A&quot; &quot;HR_A&quot;
 ## [31] &quot;HU_A&quot; &quot;HU_C&quot; &quot;IT_H&quot; &quot;IT_K&quot; &quot;JP_A&quot; &quot;LV_A&quot; &quot;NL_A&quot; &quot;PL_B&quot; &quot;PL_C&quot; &quot;PL_D&quot;
 ## [41] &quot;RO_A&quot; &quot;RO_B&quot; &quot;RS_A&quot; &quot;RU_A&quot; &quot;TJ_A&quot; &quot;UA_C&quot; &quot;UA_D&quot;</code></pre>
+<p>These plots are all classified as mown (or combination of mown other land-use) in the original land use column of the masterfile and are left classified as mown == 1.</p>
+</div>
+</div>
+<div id="mowing-1" class="section level4">
+<h4>Mowing</h4>
+<table>
+<caption>
+Contingency table of columns grazed and Grazing (1/0)
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Grazing (1/0)
+</th>
+<th style="text-align:right;">
+0
+</th>
+<th style="text-align:right;">
+1
+</th>
+<th style="text-align:right;">
+&lt;NA&gt;
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+?
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:right;">
+3238
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+5424
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+probably
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+126093
+</td>
+<td style="text-align:right;">
+29223
+</td>
+<td style="text-align:right;">
+16073
+</td>
+</tr>
+</tbody>
+</table>
+<p>There are:</p>
+<ul>
+<li>6 plot with grazed == 0 &amp; Grazing (1/0) == ‘1’</li>
+<li>6 plot with grazed == 0 &amp; Grazing (1/0) == ‘probably’</li>
+<li>7 plots with grazed == 1 &amp; Grazing (1/0) == ‘?’</li>
+<li>1 plots with grazed == 1 &amp; Grazing (1/0) == ‘2’</li>
+<li>29219 plots with grazed == 1 &amp; Grazing (1/0) = NA</li>
+<li>6 plots with grazed = NA &amp; Grazing (1/0) == ‘?’</li>
+</ul>
+<p>**NOTE: the contingency table and figures reported above do not match because there is duplicated ID in the column <code>Grassplot ID of plot</code>. The following ID are duplicated PL_C_N198_10, TR_B_P01, DK_A_N001_0.25D, DK_A_N002_0.25D, DK_A_N003_0.25D, DK_A_N004_0.25D</p>
 </div>
 </div>
 
