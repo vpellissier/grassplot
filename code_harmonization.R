@@ -26,7 +26,7 @@ table_mown <- function(data, id){
     spread(`mown`, n)
 }
 
-path_grassplot <- 'C:/Users/pellissi/Documents/grassplot'
+path_grassplot <- 'C:/Users/vincent/Documents/grassplot'
 
 df <- readRDS(file.path(path_grassplot, 'Grassplot 1.8_Data.rds'))
 df <- df %>%
@@ -37,7 +37,7 @@ names(df)[c(98,100)] <- c('mowing_frequency', 'grazing_intensity')
 
 ### Correction of the land use column
 lut <- read_excel(file.path(path_grassplot, "lookup_table_LU.xlsx" ),
-sheet = 'global_land_use')
+                  sheet = 'global_land_use')
 
 # The global_land_use lookup table is used to harmonize the column 95 with the new binary columns:
 df <- df %>%
@@ -72,7 +72,7 @@ pull()
 table_grazed(df, 'IR_A')
 
 df[df$`Dataset ID` == 'IR_A',] %<>% 
-  mutate(grazed = ifelse(grazing_intensity != '0', 1, 0))
+    mutate(grazed = ifelse(grazing_intensity != '0', 1, 0))
 
 table_grazed(df, 'IR_A')
 
@@ -80,7 +80,7 @@ table_grazed(df, 'IR_A')
 table_grazed(df, 'PL_D')
 
 df[df$`Dataset ID` == 'PL_D' & df$grazing_intensity  %in% '0.5',] %<>% 
-  mutate(grazed = 1)
+    mutate(grazed = 1)
 
 table_grazed(df, 'PL_D')
 
@@ -109,7 +109,7 @@ df[df$`Dataset ID` == 'EU_K' & df$grazing_intensity %in% '0.5',] %<>%
 table_grazed(df, 'EU_K')
 
 ### Matching new and old binary columns
-In this step, we identify and correct discrepancies between the newly created and corrected binary column, and the former ones
+# In this step, we identify and correct discrepancies between the newly created and corrected binary column, and the former ones
 
 
 df%>%

@@ -131,8 +131,9 @@ df &lt;- df %&gt;%
         mutate_at(.vars = c(95:104), funs(ifelse(. %in% c('NA', '[NA]'), NA, .)))</code></pre>
 <p>The columns 98 (mowing frequency) and 100 (grazing intensity) are renamed:</p>
 <pre class="r"><code>names(df)[c(98,100)] &lt;- c('mowing_frequency', 'grazing_intensity')</code></pre>
-<div id="correction-of-the-land-use-column" class="section level3">
-<h3>Correction of the land use column</h3>
+<p><strong>PRELIMINARY NOTE: there duplicated ID in the column <code>Grassplot ID of plot</code>. The following ID are duplicated PL_C_N198_10, TR_B_P01, DK_A_N001_0.25D, DK_A_N002_0.25D, DK_A_N003_0.25D, DK_A_N004_0.25D</strong></p>
+<div id="correction-of-the-land-use-column" class="section level2">
+<h2>Correction of the land use column</h2>
 <p>The file lookup_table_LU.xlsx contains two sheets:</p>
 <ul>
 <li>land_use_detail: lookup table between the column 96 and other column. This needs to be discussed further before I finalize the table.</li>
@@ -144,17 +145,17 @@ df &lt;- df %&gt;%
 <pre class="r"><code>df &lt;- df %&gt;%
     left_join(lut, by = c(&quot;Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA)&quot; = &quot;old_classification&quot;))</code></pre>
 </div>
-<div id="matching-new-binary-columns-and-intensity-columns" class="section level3">
-<h3>Matching new binary columns and intensity columns</h3>
+<div id="matching-new-binary-columns-and-intensity-columns-yet-to-be-automatized" class="section level2">
+<h2>Matching new binary columns and intensity columns (yet to be automatized)</h2>
 <p>In this step, we identify datasets with discrepancies between the new binary columns and the matching intensity column to:</p>
 <ul>
 <li>Manually check in the original datasets or publications</li>
 <li>Correct the discrepancies.</li>
 </ul>
-<div id="mowing-and-mowing-intensity" class="section level4">
-<h4>Mowing and mowing intensity</h4>
-<div id="datasets-containing-plots-for-which-mowing-intensity-0-mown-1-here-and-after-we-refer-to-the-new-binary-columns" class="section level5">
-<h5><em>Datasets containing plots for which mowing intensity &gt; 0 &amp; mown != 1 (here and after, we refer to the new binary columns)</em></h5>
+<div id="mowing-and-mowing-intensity" class="section level3">
+<h3>Mowing and mowing intensity</h3>
+<div id="datasets-containing-plots-for-which-mowing-intensity-0-mown-1-here-and-after-we-refer-to-the-new-binary-columns" class="section level4">
+<h4><em>Datasets containing plots for which mowing intensity &gt; 0 &amp; mown != 1 (here and after, we refer to the new binary columns)</em></h4>
 <pre><code>## [1] &quot;EU_K&quot; &quot;CZ_J&quot;</code></pre>
 <ul>
 <li>EU_K contains resp. 4 and 4 plots classified as natural_grassland with a mowing frequency of resp. 0.03 and 4. Only the plots with a frequency &gt;= 0.2 will be classified as mown (abandoned less than 5 years).</li>
@@ -167,10 +168,10 @@ df &lt;- df %&gt;%
 </ul>
 </div>
 </div>
-<div id="grazing-and-grazing-intensity" class="section level4">
-<h4>Grazing and Grazing intensity</h4>
-<div id="datasets-containing-plots-for-which-grazing-intensity-0-grazed-1" class="section level5">
-<h5><em>Datasets containing plots for which grazing intensity &gt; 0 &amp; grazed != 1:</em></h5>
+<div id="grazing-and-grazing-intensity" class="section level3">
+<h3>Grazing and Grazing intensity</h3>
+<div id="datasets-containing-plots-for-which-grazing-intensity-0-grazed-1" class="section level4">
+<h4><em>Datasets containing plots for which grazing intensity &gt; 0 &amp; grazed != 1:</em></h4>
 <pre><code>## [1] &quot;IR_A&quot; &quot;PL_D&quot; &quot;TR_B&quot; &quot;UA_G&quot; &quot;EU_K&quot;</code></pre>
 <ul>
 <li>IR_A contains 34 plots classified as mown which have a grazing_intensity == 0.1. These plots will be classified as grazed (and also remain mown as indicated in the original database IR_A.xls). <strong>Note for Idoia</strong> In the original DB, the grazing intensity is noted as 1, 2, 3. Is it correct that it stands for low, medium and high intensity, and hence translate as 0.1, 0.5, 1 in the master file?</li>
@@ -201,11 +202,11 @@ df &lt;- df %&gt;%
 </div>
 </div>
 </div>
-<div id="matching-new-and-old-binary-columns" class="section level3">
-<h3>Matching new and old binary columns</h3>
-<p>In this step, we identify and correct discrepancies between the newly created and corrected binary column, and the former ones</p>
-<div id="mowing" class="section level4">
-<h4>Mowing</h4>
+<div id="matching-new-and-old-binary-columns" class="section level2">
+<h2>Matching new and old binary columns</h2>
+<p>In this step, we identify and correct discrepancies between the newly created and corrected binary column, and the former ones. Here, we consider that mown == 1 or grazed == 1 is always correct, since it is based on the above correction (based either on the broad land-use or on the mowing / grazing intensity). Thus, we only identify (and potentialy correct) plots for which the new binary column is 0 or NA and the new one is not 0 or NA.</p>
+<div id="mowing" class="section level3">
+<h3>Mowing</h3>
 <table>
 <caption>
 Contingency table of columns mown and Mowing (1/0)
@@ -285,35 +286,105 @@ NA
 </tr>
 </tbody>
 </table>
-<p>There are:</p>
-<ul>
-<li>8 plot with mown == 1 &amp; Mowing (1/0) == 0</li>
-<li>0 plots with mown == 0 &amp; Mowing (1/0) == 1</li>
-<li>6810 plots with mown == 1 &amp; Mowing (1/0) = NA</li>
-<li>6 plots with mown = NA &amp; Mowing (1/0) == ‘?’</li>
-</ul>
-<div id="datasets-containing-plots-with-mown-1-mowing-10-0-new-vs-former-column" class="section level5">
-<h5><em>Datasets containing plots with mown == 1 &amp; Mowing (1/0) == 0 (new vs former column):</em></h5>
-<pre><code>## [1] &quot;EU_K&quot;</code></pre>
-<p>These 8 plots corresponds to 4 plots reclassified as mown == 1 earlier in EU_K and 4 plots classified as mown == 1 but misclassified in the former Mowing (1/0) column. The classifiaction of these plots is left untouched</p>
-</div>
-<div id="datasets-containing-plots-with-mown-na-mowing-10-new-vs-former-column" class="section level5">
-<h5><em>Datasets containing plots with mown = NA &amp; Mowing (1/0) == ? (new vs former column):</em></h5>
-<pre><code>## [1] &quot;PL_A&quot;</code></pre>
+<div id="datasets-with-discrepancies-between-mown-and-mowing-10-automatic-report" class="section level4">
+<h4>Datasets with discrepancies between mown and Mowing (1/0) (automatic report):</h4>
+<pre><code>## [1] &quot;The dataset(s) PL_A contain(s) 6 plots with burnt = NA and Burning (1/0) = ?&quot;</code></pre>
+<div id="manual-verification-of-discrepancies-has-to-be-updated-manually-if-necessary-for-each-version-of-the-masterfile" class="section level5">
+<h5>Manual verification of discrepancies (has to be updated manually if necessary for each version of the masterfile)</h5>
+<div id="datasets-containing-plots-with-mown-na-mowing-10-new-vs-former-column" class="section level6">
+<h6><em>Datasets containing plots with mown = NA &amp; Mowing (1/0) == ? (new vs former column):</em></h6>
+<p>The following plots in PL_A have mown = NA and Mowing (1/0) == ‘?’</p>
+<pre><code>## [1] &quot;PL_A_N003_0.0001a&quot; &quot;PL_A_N003_0.001a&quot;  &quot;PL_A_N003_0.01a&quot;  
+## [4] &quot;PL_A_N003_0.1a&quot;    &quot;PL_A_N003_10a&quot;     &quot;PL_A_N003_1a&quot;</code></pre>
 <p>No additional information could be found, so the plots are left with mown = NA</p>
 </div>
-<div id="datasets-containing-plots-with-mown-1-mowing-10-na-new-vs-former-column" class="section level5">
-<h5><em>Datasets containing plots with mown == 1 &amp; Mowing (1/0) = NA (new vs former column):</em></h5>
-<pre><code>##  [1] &quot;AT_A&quot; &quot;BG_A&quot; &quot;CH_A&quot; &quot;CH_B&quot; &quot;CH_C&quot; &quot;CZ_A&quot; &quot;CZ_B&quot; &quot;CZ_C&quot; &quot;CZ_H&quot; &quot;CZ_I&quot;
-## [11] &quot;DE_A&quot; &quot;DE_E&quot; &quot;DE_F&quot; &quot;DE_H&quot; &quot;DE_I&quot; &quot;DE_J&quot; &quot;DE_L&quot; &quot;DE_N&quot; &quot;DE_O&quot; &quot;DE_P&quot;
-## [21] &quot;ES_A&quot; &quot;ES_C&quot; &quot;EU_A&quot; &quot;EU_B&quot; &quot;EU_C&quot; &quot;EU_E&quot; &quot;EU_G&quot; &quot;EU_J&quot; &quot;FR_A&quot; &quot;HR_A&quot;
-## [31] &quot;HU_A&quot; &quot;HU_C&quot; &quot;IT_H&quot; &quot;IT_K&quot; &quot;JP_A&quot; &quot;LV_A&quot; &quot;NL_A&quot; &quot;PL_B&quot; &quot;PL_C&quot; &quot;PL_D&quot;
-## [41] &quot;RO_A&quot; &quot;RO_B&quot; &quot;RS_A&quot; &quot;RU_A&quot; &quot;TJ_A&quot; &quot;UA_C&quot; &quot;UA_D&quot;</code></pre>
-<p>These plots are all classified as mown (or combination of mown other land-use) in the original land use column of the masterfile and are left classified as mown == 1.</p>
 </div>
 </div>
-<div id="grazing" class="section level4">
-<h4>Grazing</h4>
+<div id="check" class="section level4">
+<h4>Check</h4>
+<table>
+<caption>
+Contingency table of columns mown and Mowing (1/0) after reclassification (check)
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Mowing (1/0)
+</th>
+<th style="text-align:right;">
+0
+</th>
+<th style="text-align:right;">
+1
+</th>
+<th style="text-align:right;">
+&lt;NA&gt;
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+?
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:right;">
+6247
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+22
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+620
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+150296
+</td>
+<td style="text-align:right;">
+6810
+</td>
+<td style="text-align:right;">
+16068
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="grazing" class="section level3">
+<h3>Grazing</h3>
 <table>
 <caption>
 Contingency table of columns grazed and Grazing (1/0)
@@ -421,51 +492,491 @@ NA
 </tr>
 </tbody>
 </table>
-<p>There are:</p>
-<ul>
-<li>6 plots with grazed == 0 &amp; Grazing (1/0) == ‘1’</li>
-<li>6 plots with grazed == 0 &amp; Grazing (1/0) == ‘probably’</li>
-<li>7 plots with grazed == 1 &amp; Grazing (1/0) == ‘?’</li>
-<li>1 plots with grazed == 1 &amp; Grazing (1/0) == ‘2’</li>
-<li>29219 plots with grazed == 1 &amp; Grazing (1/0) = NA</li>
-<li>6 plots with grazed = NA &amp; Grazing (1/0) == ‘?’</li>
-</ul>
-<p><strong>NOTE: the contingency table and figures reported above do not match because there is duplicated ID in the column <code>Grassplot ID of plot</code>. The following ID are duplicated PL_C_N198_10, TR_B_P01, DK_A_N001_0.25D, DK_A_N002_0.25D, DK_A_N003_0.25D, DK_A_N004_0.25D</strong></p>
-<div id="datasets-plots-with-grazed-0-grazing-10-1" class="section level5">
-<h5><em>Datasets plots with grazed == 0 &amp; Grazing (1/0) == ‘1’:</em></h5>
-<pre><code>## [1] &quot;PL_A_N005_0.0001b&quot; &quot;PL_A_N005_0.001b&quot;  &quot;PL_A_N005_0.01b&quot;  
-## [4] &quot;PL_A_N005_0.1b&quot;    &quot;PL_A_N005_10b&quot;     &quot;PL_A_N005_1b&quot;</code></pre>
-</div>
-<div id="datasets-plots-with-grazed-0-grazing-10-probably" class="section level5">
-<h5><em>Datasets plots with grazed == 0 &amp; Grazing (1/0) == ‘probably’:</em></h5>
-<pre><code>## [1] &quot;PL_A_N004_0.0001a&quot; &quot;PL_A_N004_0.001a&quot;  &quot;PL_A_N004_0.01a&quot;  
-## [4] &quot;PL_A_N004_0.1a&quot;    &quot;PL_A_N004_10a&quot;     &quot;PL_A_N004_1a&quot;</code></pre>
-</div>
-<div id="datasets-plots-with-grazed-1-grazing-10" class="section level5">
-<h5><em>Datasets plots with grazed == 1 &amp; Grazing (1/0) == ‘?’:</em></h5>
-<pre><code>## [1] &quot;PL_A_N003_0.0001b&quot; &quot;PL_A_N003_0.001b&quot;  &quot;PL_A_N003_0.01b&quot;  
-## [4] &quot;PL_A_N003_0.1b&quot;    &quot;PL_A_N003_100&quot;     &quot;PL_A_N003_10b&quot;    
-## [7] &quot;PL_A_N003_1b&quot;</code></pre>
-</div>
-<div id="datasets-plots-with-grazed-1-grazing-10-2" class="section level5">
-<h5><em>Datasets plots with grazed == 1 &amp; Grazing (1/0) == ‘2’:</em></h5>
-<pre><code>## [1] &quot;PL_A_N006_0.0001a&quot;</code></pre>
-</div>
-<div id="datasets-plots-with-grazed-1-grazing-10-na" class="section level5">
-<h5><em>Datasets plots with grazed == 1 &amp; Grazing (1/0) = NA:</em></h5>
-<pre><code>##  [1] &quot;AM_A&quot; &quot;BG_A&quot; &quot;BY_A&quot; &quot;CH_B&quot; &quot;CN_A&quot; &quot;CN_B&quot; &quot;DE_B&quot; &quot;DE_C&quot; &quot;DE_D&quot; &quot;DE_E&quot;
-## [11] &quot;DE_G&quot; &quot;DE_H&quot; &quot;DE_I&quot; &quot;DE_L&quot; &quot;DE_N&quot; &quot;DE_O&quot; &quot;DE_P&quot; &quot;DE_Q&quot; &quot;EE_B&quot; &quot;ES_A&quot;
-## [21] &quot;ES_B&quot; &quot;ES_C&quot; &quot;ES_E&quot; &quot;ES_F&quot; &quot;EU_D&quot; &quot;EU_E&quot; &quot;EU_G&quot; &quot;EU_I&quot; &quot;EU_J&quot; &quot;FR_A&quot;
-## [31] &quot;GR_A&quot; &quot;HR_A&quot; &quot;HU_C&quot; &quot;HU_D&quot; &quot;IL_A&quot; &quot;IT_A&quot; &quot;IT_B&quot; &quot;IT_C&quot; &quot;IT_D&quot; &quot;IT_E&quot;
-## [41] &quot;IT_F&quot; &quot;IT_G&quot; &quot;IT_K&quot; &quot;IT_Q&quot; &quot;LV_A&quot; &quot;MN_A&quot; &quot;MN_B&quot; &quot;MN_C&quot; &quot;PL_C&quot; &quot;RO_A&quot;
-## [51] &quot;RO_B&quot; &quot;RO_C&quot; &quot;RS_A&quot; &quot;RU_A&quot; &quot;SE_A&quot; &quot;SE_B&quot; &quot;SE_C&quot; &quot;SE_D&quot; &quot;SI_A&quot; &quot;UA_A&quot;
-## [61] &quot;UA_D&quot; &quot;UA_E&quot; &quot;EU_K&quot; &quot;CH_E&quot; &quot;IT_R&quot; &quot;DK_A&quot;</code></pre>
-</div>
-<div id="datasets-plots-with-grazed-na-grazing-10" class="section level5">
-<h5><em>Datasets plots with grazed = NA &amp; Grazing (1/0) == ‘?’:</em></h5>
+<div id="datasets-with-discrepancies-between-grazed-and-grazing-10-automatic-report" class="section level4">
+<h4>Datasets with discrepancies between grazed and Grazing (1/0) (automatic report):</h4>
+<pre><code>## [1] &quot;The dataset(s) PL_A contain(s) 6 plots with burnt = NA and Burning (1/0) = ?&quot;
+## [1] &quot;The dataset(s) PL_A contain(s) 6 plots with burnt == 0 and Burning (1/0) = probably&quot;
+## [1] &quot;The dataset(s) PL_A contain(s) 6 plots with burnt == 0 and Burning (1/0) = 1&quot;</code></pre>
+<div id="manual-verification-of-discrepancies-has-to-be-updated-manually-if-necessary-for-each-version-of-the-masterfile-1" class="section level5">
+<h5>Manual verification of discrepancies (has to be updated manually if necessary for each version of the masterfile)</h5>
+<div id="datasets-plots-with-grazed-na-grazing-10" class="section level6">
+<h6><em>Datasets plots with grazed = NA &amp; Grazing (1/0) == ‘?’:</em></h6>
+<p>The following plots in PL_A have grazed = NA and Grazing (1/0) == ‘?’</p>
 <pre><code>## [1] &quot;PL_A_N003_0.0001a&quot; &quot;PL_A_N003_0.001a&quot;  &quot;PL_A_N003_0.01a&quot;  
 ## [4] &quot;PL_A_N003_0.1a&quot;    &quot;PL_A_N003_10a&quot;     &quot;PL_A_N003_1a&quot;</code></pre>
+<p>No additional information could be found, so the plots are left as grazed = NA</p>
 </div>
+<div id="datasets-plots-with-grazed-0-grazing-10-probably" class="section level6">
+<h6><em>Datasets plots with grazed == 0 &amp; Grazing (1/0) == ‘probably’:</em></h6>
+<p>The following plots in PL_A have grazed == 0 and Grazing (1/0) == ‘’probably’</p>
+<pre><code>## [1] &quot;PL_A_N004_0.0001a&quot; &quot;PL_A_N004_0.001a&quot;  &quot;PL_A_N004_0.01a&quot;  
+## [4] &quot;PL_A_N004_0.1a&quot;    &quot;PL_A_N004_10a&quot;     &quot;PL_A_N004_1a&quot;</code></pre>
+<p>No additional information could be found, so the plots are left as grazed == 0.</p>
+</div>
+<div id="datasets-plots-with-grazed-0-grazing-10-1" class="section level6">
+<h6><em>Datasets plots with grazed == 0 &amp; Grazing (1/0) == ‘1’:</em></h6>
+<p>The following plots in PL_A have grazed == 0 and Grazing (1/0) == 1</p>
+<pre><code>## [1] &quot;PL_A_N005_0.0001b&quot; &quot;PL_A_N005_0.001b&quot;  &quot;PL_A_N005_0.01b&quot;  
+## [4] &quot;PL_A_N005_0.1b&quot;    &quot;PL_A_N005_10b&quot;     &quot;PL_A_N005_1b&quot;</code></pre>
+<ul>
+<li>PL_A contains 6 plots (PL_A_N005_xxxxb) noted as abandoned with ‘occasionally grazed or trampled’ in the detailed column (column 96). These plots will be classified as grazed in the new binary column.</li>
+</ul>
+<pre class="r"><code>df[df$`grazed` %in% '0' &amp; df$`Grazing (1/0)` %in% '1',]%&lt;&gt;% 
+    mutate(grazed = 1)</code></pre>
+</div>
+</div>
+</div>
+<div id="check-1" class="section level4">
+<h4>Check</h4>
+<table>
+<caption>
+Contingency table of columns grazed and Grazing (1/0) after reclassification (check
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Grazing (1/0)
+</th>
+<th style="text-align:right;">
+0
+</th>
+<th style="text-align:right;">
+1
+</th>
+<th style="text-align:right;">
+&lt;NA&gt;
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+?
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:right;">
+3238
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+5430
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+probably
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+126093
+</td>
+<td style="text-align:right;">
+29223
+</td>
+<td style="text-align:right;">
+16073
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="burning" class="section level3">
+<h3>Burning</h3>
+<table>
+<caption>
+Contingency table of columns burnt and Burning (1/0)
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Burning (1/0)
+</th>
+<th style="text-align:right;">
+0
+</th>
+<th style="text-align:right;">
+1
+</th>
+<th style="text-align:right;">
+&lt;NA&gt;
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+?
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:right;">
+6363
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+62
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:right;">
+134
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+157439
+</td>
+<td style="text-align:right;">
+39
+</td>
+<td style="text-align:right;">
+16031
+</td>
+</tr>
+</tbody>
+</table>
+<div id="datasets-with-discrepancies-between-burnt-and-burning-10-automatic-report" class="section level4">
+<h4>Datasets with discrepancies between burnt and Burning (1/0) (automatic report):</h4>
+<pre><code>## [1] &quot;The dataset(s) BY_A, IR_A, RS_A, RU_J, TJ_A, UA_G, UA_I, UA_J, CH_E, RU_L contain(s) 134 plots with burnt == 0 and Burning (1/0) = 1&quot;
+## [1] &quot;The dataset(s) BY_A contain(s) 3 plots with burnt = NA and Burning (1/0) = 1&quot;
+## [1] &quot;The dataset(s) PL_A contain(s) 6 plots with burnt == 0 and Burning (1/0) = ?&quot;</code></pre>
+<div id="manual-verification-of-discrepancies-has-to-be-updated-manually-if-necessary-for-each-version-of-the-masterfile-2" class="section level5">
+<h5>Manual verification of discrepancies (has to be updated manually if necessary for each version of the masterfile)</h5>
+<div id="datasets-with-burnt-0-and-burning-10-1" class="section level6">
+<h6><em>Datasets with burnt == 0 and Burning (1/0) == 1</em></h6>
+<p>The following plots have burnt = 0 and Burning (1/0) == ‘1’:</p>
+<pre><code>##   [1] &quot;BY_A_P003&quot;         &quot;BY_A_P004&quot;         &quot;BY_A_P005&quot;        
+##   [4] &quot;IR_A_N004_0.0001a&quot; &quot;IR_A_N004_0.0001b&quot; &quot;IR_A_N004_0.001a&quot; 
+##   [7] &quot;IR_A_N004_0.001b&quot;  &quot;IR_A_N004_0.01a&quot;   &quot;IR_A_N004_0.01b&quot;  
+##  [10] &quot;IR_A_N004_0.1a&quot;    &quot;IR_A_N004_0.1b&quot;    &quot;IR_A_N004_1000&quot;   
+##  [13] &quot;IR_A_N004_100a&quot;    &quot;IR_A_N004_100b&quot;    &quot;IR_A_N004_10a&quot;    
+##  [16] &quot;IR_A_N004_10b&quot;     &quot;IR_A_N004_1a&quot;      &quot;IR_A_N004_1b&quot;     
+##  [19] &quot;IR_A_N004_25a&quot;     &quot;IR_A_N004_25b&quot;     &quot;RS_A_N010_100&quot;    
+##  [22] &quot;RS_A_N011_0.0001a&quot; &quot;RS_A_N011_0.0001b&quot; &quot;RS_A_N011_0.001a&quot; 
+##  [25] &quot;RS_A_N011_0.001b&quot;  &quot;RS_A_N011_0.01a&quot;   &quot;RS_A_N011_0.01b&quot;  
+##  [28] &quot;RS_A_N011_0.1a&quot;    &quot;RS_A_N011_0.1b&quot;    &quot;RS_A_N011_100&quot;    
+##  [31] &quot;RS_A_N011_10a&quot;     &quot;RS_A_N011_10b&quot;     &quot;RS_A_N011_1a&quot;     
+##  [34] &quot;RS_A_N011_1b&quot;      &quot;RU_J_P020&quot;         &quot;RU_J_P021&quot;        
+##  [37] &quot;TJ_A_N004_0.001a&quot;  &quot;TJ_A_N004_0.001b&quot;  &quot;TJ_A_N004_0.01a&quot;  
+##  [40] &quot;TJ_A_N004_0.01b&quot;   &quot;TJ_A_N004_0.1a&quot;    &quot;TJ_A_N004_0.1b&quot;   
+##  [43] &quot;TJ_A_N005_0.001a&quot;  &quot;TJ_A_N005_0.001b&quot;  &quot;TJ_A_N005_0.01a&quot;  
+##  [46] &quot;TJ_A_N005_0.01b&quot;   &quot;TJ_A_N005_0.1a&quot;    &quot;TJ_A_N005_0.1b&quot;   
+##  [49] &quot;TJ_A_N011_0.001a&quot;  &quot;TJ_A_N011_0.001b&quot;  &quot;TJ_A_N011_0.01a&quot;  
+##  [52] &quot;TJ_A_N011_0.01b&quot;   &quot;TJ_A_N011_0.1a&quot;    &quot;TJ_A_N011_0.1b&quot;   
+##  [55] &quot;TJ_A_N011_100&quot;     &quot;TJ_A_N011_10a&quot;     &quot;TJ_A_N011_10b&quot;    
+##  [58] &quot;TJ_A_N011_1a&quot;      &quot;TJ_A_N011_1b&quot;      &quot;TJ_A_N012_0.0001a&quot;
+##  [61] &quot;TJ_A_N012_0.0001b&quot; &quot;UA_G_N008_100&quot;     &quot;UA_G_N009_1&quot;      
+##  [64] &quot;UA_G_N009_10&quot;      &quot;UA_G_N009_100&quot;     &quot;UA_G_N010_1&quot;      
+##  [67] &quot;UA_G_N010_10&quot;      &quot;UA_G_N010_100&quot;     &quot;UA_G_N011_1&quot;      
+##  [70] &quot;UA_G_N011_10&quot;      &quot;UA_G_N011_100&quot;     &quot;UA_G_N012_1&quot;      
+##  [73] &quot;UA_G_N012_10&quot;      &quot;UA_G_N012_100&quot;     &quot;UA_I_N005_0.001a&quot; 
+##  [76] &quot;UA_I_N005_0.001b&quot;  &quot;UA_I_N005_0.01a&quot;   &quot;UA_I_N005_0.01b&quot;  
+##  [79] &quot;UA_I_N005_0.1a&quot;    &quot;UA_I_N005_0.1b&quot;    &quot;UA_I_N005_100&quot;    
+##  [82] &quot;UA_I_N005_10a&quot;     &quot;UA_I_N005_10b&quot;     &quot;UA_I_N005_1a&quot;     
+##  [85] &quot;UA_I_N005_1b&quot;      &quot;UA_I_N006_0.0001a&quot; &quot;UA_I_N006_0.0001b&quot;
+##  [88] &quot;UA_J_N005_0.01a&quot;   &quot;UA_J_N005_0.1a&quot;    &quot;UA_J_N005_1a&quot;     
+##  [91] &quot;UA_J_N005_10a&quot;     &quot;UA_J_N005_0.0001b&quot; &quot;UA_J_N005_0.001b&quot; 
+##  [94] &quot;UA_J_N005_0.01b&quot;   &quot;UA_J_N005_0.1b&quot;    &quot;UA_J_N005_1b&quot;     
+##  [97] &quot;UA_J_N005_10b&quot;     &quot;UA_J_N005_100&quot;     &quot;UA_J_N006_0.0001a&quot;
+## [100] &quot;UA_J_N006_0.001a&quot;  &quot;UA_J_N006_0.01a&quot;   &quot;UA_J_N006_0.1a&quot;   
+## [103] &quot;UA_J_N006_1a&quot;      &quot;UA_J_N006_10a&quot;     &quot;UA_J_N006_0.0001b&quot;
+## [106] &quot;UA_J_N006_0.001b&quot;  &quot;UA_J_N006_0.01b&quot;   &quot;UA_J_N006_0.1b&quot;   
+## [109] &quot;UA_J_N006_1b&quot;      &quot;UA_J_N006_10b&quot;     &quot;UA_J_N006_100&quot;    
+## [112] &quot;UA_J_N007_0.0001a&quot; &quot;UA_J_N007_0.001a&quot;  &quot;UA_J_N009_1b&quot;     
+## [115] &quot;UA_J_N009_10b&quot;     &quot;UA_J_N010_0.1b&quot;    &quot;UA_J_N010_10b&quot;    
+## [118] &quot;UA_J_N011_0.01a&quot;   &quot;UA_J_P010&quot;         &quot;UA_J_P046&quot;        
+## [121] &quot;UA_J_P058&quot;         &quot;CH_E_N003_0.01a&quot;   &quot;CH_E_N003_0.1a&quot;   
+## [124] &quot;CH_E_N003_1a&quot;      &quot;CH_E_N003_10a&quot;     &quot;CH_E_N003_0.0001b&quot;
+## [127] &quot;CH_E_N003_0.001b&quot;  &quot;CH_E_N003_0.01b&quot;   &quot;CH_E_N003_0.1b&quot;   
+## [130] &quot;CH_E_N003_1b&quot;      &quot;CH_E_N003_10b&quot;     &quot;CH_E_N003_100&quot;    
+## [133] &quot;RU_L_N001_0.0001a&quot; &quot;RU_L_N001_0.0001b&quot;</code></pre>
+<p>No other information are found. These plots are reclassified with burnt == 1</p>
+<pre class="r"><code>df[df$burnt %in% 0 &amp; df$`Burning (1/0)` %in% '1',]%&lt;&gt;%
+    mutate(burnt = 1)</code></pre>
+</div>
+<div id="datasets-with-burnt-na-and-burning-10-1" class="section level6">
+<h6><em>Datasets with burnt = NA and Burning (1/0) == 1</em></h6>
+<p>The following plots have burnt = NA and Burning (1/0) == ‘?’:</p>
+<pre><code>## [1] &quot;BY_A_P006&quot; &quot;BY_A_P007&quot; &quot;BY_A_P009&quot;</code></pre>
+<p>No other information are found. These plots are reclassified with burnt == 1</p>
+<pre class="r"><code>df[is.na(df$burnt) &amp; df$`Burning (1/0)` %in% '1',]%&lt;&gt;%
+    mutate(burnt = 1)</code></pre>
+</div>
+<div id="datasets-with-burnt-na-and-burning-10" class="section level6">
+<h6><em>Datasets with burnt = NA and Burning (1/0) == ?</em></h6>
+<p>The following plots have burnt == 0 and Burning (1/0) == ‘?’:</p>
+<pre><code>## [1] &quot;PL_A_N005_0.0001a&quot; &quot;PL_A_N005_0.001a&quot;  &quot;PL_A_N005_0.01a&quot;  
+## [4] &quot;PL_A_N005_0.1a&quot;    &quot;PL_A_N005_10a&quot;     &quot;PL_A_N005_1a&quot;</code></pre>
+<p>No additional information could be found, so the plots are left as burnt == 0.</p>
+</div>
+</div>
+</div>
+<div id="check-2" class="section level4">
+<h4>Check</h4>
+<table>
+<caption>
+Contingency table of columns burnt and Burning (1/0) after reclassification (check)
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Burning (1/0)
+</th>
+<th style="text-align:right;">
+0
+</th>
+<th style="text-align:right;">
+1
+</th>
+<th style="text-align:right;">
+&lt;NA&gt;
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+?
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:right;">
+6363
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+62
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+137
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+157439
+</td>
+<td style="text-align:right;">
+39
+</td>
+<td style="text-align:right;">
+16031
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="fertilization" class="section level3">
+<h3>Fertilization</h3>
+<table>
+<caption>
+Contingency table of columns fertilized and Fertilized (1/0)
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Fertilized (1/0)
+</th>
+<th style="text-align:right;">
+0
+</th>
+<th style="text-align:right;">
+&lt;NA&gt;
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:right;">
+5112
+</td>
+<td style="text-align:right;">
+37
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0.3
+</td>
+<td style="text-align:right;">
+24
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+0.5
+</td>
+<td style="text-align:right;">
+112
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:right;">
+196
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+158537
+</td>
+<td style="text-align:right;">
+16059
+</td>
+</tr>
+</tbody>
+</table>
+<p>This field seems to be a fertilization intensity rather than a binary variable. We should discuss it before making a decision.</p>
+</div>
+</div>
+<div id="making-use-of-the-column-96-land-use-detail" class="section level2">
+<h2>Making use of the Column 96 (Land use detail)</h2>
+<p>The column 96 provide a lot of information that is so far not fully exploited. To make use of it, it requires to manually check each of the value in this column, to fill other columns. After the discussion with Anne and Monika, I propose the following columns:</p>
+<div id="land-use-columns" class="section level3">
+<h3>Land-use columns</h3>
+<p>Already explained above, these are binary columns mown, grazed, burnt, fertilized, abandoned, natural (*i.e. no land-use past or present). There is one extra column that contains verbal information not found in these five columns.<br />
+<strong>NOTE</strong> This should be discussed, but these columns could also be viwed as management columns.</p>
+</div>
+<div id="land-cover-columns" class="section level3">
+<h3>Land-cover columns</h3>
+<p>This columns (binary) could be used to provide a clearer view on the land-use. After having briefly browsed the column 96, a first proposal is: grassland, moorland, heathland, fallowland, meadow, pasture (not entirely sure about this one).<br />
+<strong>NOTE</strong> Monika was suggesting to find a way to separate primary and secondary grasslands. I’m not sure how this fits in this proposal, so it’s open to discussion.</p>
+</div>
+<div id="time-since-abandonment" class="section level3">
+<h3>Time since abandonment</h3>
+<p>Self explanatory. This column already exists, we shoud make sure there is no information about this unexploited in the column 96.</p>
+</div>
+<div id="grazing-animal" class="section level3">
+<h3>Grazing animal</h3>
+<p>Type of animal grazing the land. So far, we have five categories in mind: cow, sheep, goat, horse, other. I am not sure wether grazing by wild animal should be considered, as it is not necessarily linked with land-use.</p>
 </div>
 </div>
 

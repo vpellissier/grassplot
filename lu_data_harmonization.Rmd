@@ -3,8 +3,8 @@ title: "Land-use data harmonization"
 author: "Vincent Pellissier"
 date: "8 November 2018"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 classoption: table
 ---
 
@@ -19,7 +19,7 @@ library(magrittr)
 library(knitr)
 library(kableExtra)
 
-path_grassplot <- 'C:/Users/pellissi/Documents/grassplot'
+path_grassplot <- './'
 ```
 This report explains the steps taken to correct the land-use data.
 The masterfile used is the version 1.8, as found on November 8th 2018.
@@ -124,7 +124,9 @@ df[df$`Dataset ID` == 'EU_K' & df$grazing_intensity %in% '0.5',] %<>%
 ```
 
 ### Matching new and old binary columns
-In this step, we identify and correct discrepancies between the newly created and corrected binary column, and the former ones
+In this step, we identify and correct discrepancies between the newly created and corrected binary column, and the former ones.
+Here, we consider that mown == 1 or grazed == 1 is always correct, since it is based on the above correction (based either on the broad land-use or on the mowing / grazing intensity).
+Thus, we only identify (and potentialy correct) plots for which the new binary column is 0 or NA and the new one is not 0 or NA.
 
 #### Mowing
 ```{r, echo = F}
@@ -191,7 +193,7 @@ df %>%
 These plots are all classified as mown (or combination of mown other land-use) in the original land use column of the masterfile and are left classified as mown == 1.
 
 
-#### Mowing
+#### Grazing
 ```{r, echo = F}
 df%>%
   group_by(`grazed`, `Grazing (1/0)`)%>%
@@ -224,12 +226,70 @@ nb_newNA_oldunk <- df %>%
   distinct(`GrassPlot ID of plot`)%>% count()
 ```
 
-  * `r nb_new0_old1` plot with grazed == 0 & Grazing (1/0) == '1'
-  * `r nb_new0_oldprob` plot with grazed == 0 & Grazing (1/0) == 'probably'
+  * `r nb_new0_old1` plots with grazed == 0 & Grazing (1/0) == '1'
+  * `r nb_new0_oldprob` plots with grazed == 0 & Grazing (1/0) == 'probably'
   * `r nb_new1_oldunk` plots with grazed == 1 & Grazing (1/0) == '?'
   * `r nb_new1_old2` plots with grazed == 1 & Grazing (1/0) == '2'
   * `r nb_new1_oldNA` plots with grazed == 1 & Grazing (1/0) = NA
   * `r nb_newNA_oldunk` plots with grazed = NA & Grazing (1/0) == '?'
 
 **NOTE: the contingency table and figures reported above do not match because there is duplicated ID in the column `Grassplot ID of plot`.
-The following ID are duplicated `r unique(df[which(duplicated(df[,3])),3])%>%pull()`**
+The following ID are duplicated `r unique(df[which(duplicated(df[,3])),3])%>%pull()`**  
+
+##### *Datasets plots with grazed == 0 & Grazing (1/0) == '1':*
+```{r echo = F}
+df %>%
+    filter(`grazed` == '0' & `Grazing (1/0)` == '1' )%>%
+    distinct(`GrassPlot ID of plot`)%>% 
+    pull()
+```
+  * PL_A contains 6 plots (PL_A_N005_xxxxb) noted as abandoned with 'occasionally grazed or trampled' in the detailed column (column 96). These plots will be classified as grazed in the new binary column.``
+
+```{r}
+df[df$`grazed` %in% '0' & df$`Grazing (1/0)` %in% '1',]%<>% 
+    mutate(grazed = 1)
+```
+
+##### *Datasets plots with grazed == 0 & Grazing (1/0) == 'probably':*
+```{r echo = F}
+df %>%
+    filter(`grazed` == 0 & `Grazing (1/0)` == 'probably' )%>%
+    distinct(`GrassPlot ID of plot`)%>% 
+    pull()
+```
+  * PL_A contains 6 plots (PL_A_N004_xxxxa) noted as mown in column 95 with Grazing = 'probably'. Without further information, these plots are left as grazed = 0.
+##### *Datasets plots with grazed == 1 & Grazing (1/0) == '?':*
+```{r echo = F}
+df %>%
+    filter(`grazed` == 1 & `Grazing (1/0)` == '?')%>%
+    distinct(`GrassPlot ID of plot`)%>% 
+    pull()
+```
+    * PL_A contains 7 plots (PL_A_N003_xxxxb) noted as mown/grazed in column 95. These plots are left with grazed == 1
+    
+##### *Datasets plots with grazed == 1 & Grazing (1/0) == '2':*
+```{r echo = F}
+df %>%
+    filter(`grazed` == 1 & `Grazing (1/0)` == '2')%>%
+    distinct(`GrassPlot ID of plot`)%>% 
+    pull()
+```
+  * PL_A contains 1 plots (PL_A_N006_0.0001a) with Grazing (1/0) == 2. This plot is left as grazed == 1 as this is likely a typo
+
+##### *Datasets plots with grazed == 1 & Grazing (1/0) = NA:*
+```{r echo = F}
+df %>%
+    filter(`grazed` == 1 & is.na(`Grazing (1/0)`))%>%
+    distinct(`Dataset ID`)%>% 
+    pull()
+```
+  * There is 29219 plots with grazed == 1 and Grazing (1/0) = NA. These plots are left with grazed == 1
+
+##### *Datasets plots with grazed = NA & Grazing (1/0) == '?':*
+```{r echo = F}
+df %>%
+    filter(is.na(`grazed`) & `Grazing (1/0)` == '?')%>%
+    distinct(`GrassPlot ID of plot`)%>% 
+    pull()
+```
+  * PL_A contains 6 plots (PL_A_N003_xxxxa) with Grazing (1/0) = '?'. Without further information, these plots are left as grazed = NA
