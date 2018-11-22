@@ -26,7 +26,7 @@ table_mown <- function(data, id){
     spread(`mown`, n)
 }
 
-path_grassplot <- 'C:/Users/vincent/Documents/grassplot'
+path_grassplot <- './'
 
 df <- readRDS(file.path(path_grassplot, 'Grassplot 1.8_Data.rds'))
 df <- df %>%
@@ -43,11 +43,25 @@ lut <- read_excel(file.path(path_grassplot, "lookup_table_LU.xlsx" ),
 df <- df %>%
 left_join(lut, by = c("Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA)" = "old_classification"))
 
+# Replacement of odd values and conversion to numerical
+df$mowing_frequency <- as.numeric(df$mowing_frequency)
+
+df[df$grazing_intensity %in% c('overgrazing', 'high'),]%<>%
+  mutate(grazing_intensity = 1)
+
+df[df$grazing_intensity %in% c('middle'),]%<>%
+  mutate(grazing_intensity = 0.5)
+
+df[df$grazing_intensity %in% c('low'),]%<>%
+  mutate(grazing_intensity = 0.1)
+
+df$grazing_intensity <- as.numeric(df$grazing_intensity)
+
 ### Matching new binary columns and intensity columns
 #### Mowing and mowing intensity
 # Datasets containing plots for which mowing intensity > 0 & mown != 1) (here and after, we refer to the new binary columns)
 df %>% 
-filter(`mown` != 1 & `mowing_frequency` != '0' )%>%
+filter(`mown` != 1 & `mowing_frequency` != 0 )%>%
 distinct(`Dataset ID`)%>%
 pull()
 
