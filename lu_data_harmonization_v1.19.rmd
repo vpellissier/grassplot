@@ -1,0 +1,626 @@
+---
+title: "Land-use data harmonization"
+author: "Vincent Pellissier"
+date: "27 November 2018"
+header-includes:
+   - \usepackage{float}
+output:
+  pdf_document:
+    number_sections: true
+  html_document:
+    number_sections: true
+classoption: table
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+options(kableExtra.latex.load_packages = FALSE)
+options(warn = 0)
+library(readxl)
+library(writexl)
+library(tidyverse)
+library(magrittr)
+library(knitr)
+library(kableExtra)
+library(float)
+
+path_grassplot <- './'
+```
+This report explains the steps taken to correct the land-use data.
+The masterfile used is the version 1.19, as found on November 27th 2018.
+The sheet in Grassplot 1.19.xlsx containing the LU information is the sheet 'datasets' and was read and saved as a .rds file to ease the process (faster loading)
+
+```{r, echo = T}
+df <- readRDS(file.path(path_grassplot, 'Grassplot 1.19_Data.rds'))
+df <- df %>%
+        mutate_at(.vars = c(95:104), funs(ifelse(. %in% c('NA', '[NA]'), NA, .)))
+```
+
+The columns 98 (mowing frequency) and 100 (grazing intensity) are renamed as `mowing_frequency` and `grazing intensity`:
+```{r}
+names(df)[which(names(df) %in% c('Mowing frequency: cuts per year (2=2cut/yr; 1=1cut/yr; 0.5=1 cut/2 yr or 2 yr abandoned; 0.2=1 cut/5 yr or 5 yr abandones; 0=never mown)', 'Grazing intensity (0/1) 1= intensive grazing'))] <- c('mowing_frequency', 'grazing_intensity')
+```
+
+The column 104 (Fertilized (1/0)) should be a binary column. Yet, it contains the values `r as.character(na.omit(unique(df[,'Fertilized (1/0)'])))`, meaning that it is an intensity column. The column is thus renamed `fertilization_intensity`
+```{r}
+names(df)[which(names(df) == 'Fertilized (1/0)')] <- 'fertilization_intensity'
+```
+
+**PRELIMINARY NOTE: there are duplicated ID in the column `Grassplot ID of plot`.
+The following ID are duplicated `r unique(df[which(duplicated(df[,3])),3])%>%pull()`**  
+
+
+# Correction of the land use column
+The file lookup_table_LU.xlsx contains two sheets:
+
+  * land_use_detail: lookup table between the column 96 and other column. This needs to be discussed further before I finalize the table.
+  * global_land_use: lookuptable matching the values in column 95 with a new classification. This new classification is a set of binary columns
+  (allowing for mixed land-use) plus one declarative column. Each binary column correspond to a management practice (grazed,	mown,	burnt,	fertilized, abandoned,	natural_grassland), the declarative column stores additional information that cannot be put in one of the 6 columns (*i.e* trampled) and
+  that will be used afterward. **NOTE** LAS, P, L were noted as land-use for the dataset PL_C and N was noted as land-use for the dataset RU_J. I could not find what these stand for. I assumed that these plots don't have a land-use but the info is still in the column 'other'.
+
+```{r}
+lut <- read_excel(file.path(path_grassplot, "lookup_table_LU.xlsx" ),
+                 sheet = 'global_land_use')
+```
+
+The global_land_use lookup table is used to harmonize the column 95 with the new binary columns:
+```{r}
+df <- df %>%
+    left_join(lut, 
+              by = c("Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA)" = "old_classification"))
+```
+
+# Correction of the intensity/frequency columns
+```{r, echo = F}
+grazing_values <- na.omit(unique(df$grazing_intensity))
+mowing_values <- na.omit(unique(df$mowing_frequency))
+fertilization_values <- na.omit(unique(df$fertilization_intensity))
+numeric_grazing_values <- na.omit(unique(as.numeric(df$grazing_intensity)))
+numeric_mowing_values <- na.omit(unique(as.numeric(df$mowing_frequency)))
+numeric_fertilization_values <- na.omit(unique(as.numeric(df$fertilization_intensity)))
+
+non_num_mowing <- setdiff(mowing_values, numeric_mowing_values)
+non_num_grazing <- setdiff(grazing_values, numeric_grazing_values)
+non_num_fertilization <- setdiff(fertilization_values, numeric_fertilization_values)
+
+nb_mowing <- sum(table(df$mowing_frequency)[names(table(df$mowing_frequency)) != 0])
+nb_grazing <- sum(table(df$grazing_intensity)[names(table(df$grazing_intensity)) != 0])
+nb_fertilization <- sum(table(df$fertilization_intensity)[names(table(df$fertilization_intensity)) != 0])
+```
+
+These three columns (mowing_frequency, grazing_intensity, fertilization_intensity) are presently coded as text columns  
+The column mowing_frequency contains `r length(non_num_mowing)` non-numeric values `r if(length(non_num_mowing) != 0) {paste0(': ', paste(non_num_mowing, collapse = ','))}`.  
+The column grazing_intensity contains `r length(non_num_grazing)` non-numeric values `r if(length(non_num_grazing) != 0) {paste0(': ', paste(non_num_grazing, collapse = ', '))}`.  
+The column fertilization contains `r length(non_num_fertilization)` non-numeric values `r if(length(non_num_fertilization) != 0) {paste0(': ', paste(non_num_fertilization, collapse = ', '))}`. 
+
+## Mowing frequency
+The mowing_frequency does have non-numerical values.  
+A closer look (manual) at the master files shows that there is some information in the column 96, that can be converted into mowing_frequency.  
+The column is converted to numerical, meaning that we lose the information for now, but it will be retrieved later using the column 96.
+
+```{r}
+df$mowing_frequency <- as.numeric(df$mowing_frequency)
+```
+
+**Post correction check**: original number of plots with frequency - present number of plots with frequency (should be 0) = `r nb_mowing - sum(table(df$mowing_frequency)[names(table(df$mowing_frequency)) != 0])`. **Manual note** The difference here is due to the removal of the plots with mowing_frequency =='x'.  
+
+## Grazing intensity
+The grazing_intensity does have non-numerical values.
+The verbal descriptors `r non_num_grazing` are replaced by numerical values and the column is converted to numerical:
+
+  * `overgrazing` and `high` are replaced by 1
+  * `middle` is replaced by 0.5
+  * `low` is replaced by 0.1
+
+```{r}
+df[df$grazing_intensity %in% c('overgrazing', 'high'),]%<>%
+  mutate(grazing_intensity = 1)
+
+df[df$grazing_intensity %in% c('middle'),]%<>%
+  mutate(grazing_intensity = 0.5)
+
+df[df$grazing_intensity %in% c('low'),]%<>%
+  mutate(grazing_intensity = 0.1)
+
+df$grazing_intensity <- as.numeric(df$grazing_intensity)
+```
+**Post correction check**: original number of plots with intensity - present number of plots with intensity (should be 0) = `r nb_grazing - sum(table(df$grazing_intensity)[names(table(df$grazing_intensity)) != 0])`.  
+
+## Fertilization intensity
+The fertilization_intensity column does not have non-numerical values.  
+The column is converted to numerical.  
+```{r}
+df$fertilization_intensity <- as.numeric(df$fertilization_intensity)
+```
+**Post correction check**: original number of plots with intensity - present number of plots with intensity (should be 0) = `r nb_fertilization - sum(table(df$fertilization_intensity)[names(table(df$fertilization_intensity)) != 0])`.  
+
+
+# Matching new binary columns and frequency/intensity columns.
+In this step, we identify datasets with discrepancies between the new binary columns and the matching intensity column to:
+
+  * Manually check in the original datasets or publications
+  * Correct the discrepancies.
+
+**NOTE** in the following, I assumed that if the intensity/frequency/duration column was non empty, but the binary was, the intensity/frequency/duration column takes precedence (*i.e* if the frequency/intensity/duration, the binary column **HAS** to be == 1)
+    
+## Mowing and mowing intensity
+```{r, echo = F}
+nb_plots_mown <- sum(df$mown, na.rm = T)
+
+mowing_0_intensity_1 <- df %>% 
+          filter(`mown` != 1 & `mowing_frequency` != 0 )
+
+
+ds_mown <- mowing_0_intensity_1%>%
+          distinct(`Dataset ID`)%>%
+          pull()
+
+plots_mown <- mowing_0_intensity_1%>%
+          distinct(`GrassPlot ID of plot`)%>%
+          pull()
+```
+
+### *Datasets containing plots for which mowing intensity > 0 & mown != 1 (here and after, we refer to the new binary columns)*
+  * The datasets `r paste(ds_mown, collapse = ', ')` contain `r length(plots_mown)` plots having a mowing intensity but classified as mown == 0. These plots have been manually checked the 8/11/2018 (masterfile v1.8) and contains not errors or additional information. They are thus reclassified as mown == 1.  
+  **NOTE** If necessary, we can discuss a frequency threshold the classify a plot as mown or not.
+  
+```{r}
+df[df$mowing_frequency != 0 & !is.na(df$mowing_frequency) & df$mown == 0,] %<>% 
+  mutate(mown = 1)
+```
+
+**Post reclassification check:** number of plots with a discrepancy - number of plots reclassified (should be 0) = `r length(plots_mown) - (sum(df$mown, na.rm = T) - nb_plots_mown)`
+
+
+## Grazing and Grazing intensity
+```{r, echo = F}
+nb_plots_grazed <- sum(df$grazed, na.rm = T)
+
+grazing_0_intensity_1 <- df %>% 
+          filter(`grazed` != 1 & `grazing_intensity` != 0 )
+
+
+ds_grazed <- grazing_0_intensity_1%>%
+          distinct(`Dataset ID`)%>%
+          pull()
+
+plots_grazed <- grazing_0_intensity_1%>%
+          distinct(`GrassPlot ID of plot`)%>%
+          pull()
+```
+
+### *Datasets containing plots for which grazing intensity > 0 & grazed != 1:*
+  * The datasets `r paste(ds_grazed, collapse = ', ')` contain `r length(plots_grazed)` plots having a mowing intensity but classified as grazed == 0. These plots have been manually checked the 8/11/2018 (masterfile v1.8) and contains not errors or additional information. They are thus reclassified as grazed == 1.  
+
+```{r}
+df[df$grazing_intensity != 0 & !is.na(df$grazing_intensity) & df$grazed == 0,] %<>% 
+  mutate(grazed = 1)
+```
+
+**Post reclassification check:** number of plots with a discrepancy - number of plots reclassified (should be 0) = `r length(plots_grazed) - (sum(df$grazed, na.rm = T) - nb_plots_grazed)`
+
+## Fertilization and fertiliation intensity
+```{r, echo = F}
+nb_plots_fertilized <- sum(df$fertilized, na.rm = T)
+
+fertilized_0_intensity_1 <- df %>% 
+          filter(`fertilized` != 1 & `fertilization_intensity` != 0 )
+
+
+ds_fertilized <- fertilized_0_intensity_1%>%
+          distinct(`Dataset ID`)%>%
+          pull()
+
+plots_fertilized <- fertilized_0_intensity_1%>%
+          distinct(`GrassPlot ID of plot`)%>%
+          pull()
+```
+
+### *Datasets containing plots for which fertilization intensity > 0 & fertilized != 1 (here and after, we refer to the new binary columns)*
+  * The datasets `r paste(ds_fertilized, collapse = ', ')` contain `r length(plots_fertilized)` plots having a fertilization intensity but classified as fertilized == 0. These plots have **not** been manually verified (to be done). They are thus reclassified as fertilized == 1.  
+
+```{r}
+df[df$fertilization_intensity != 0 & !is.na(df$fertilization_intensity) & df$fertilized == 0,] %<>% 
+  mutate(fertilized = 1)
+```
+
+**Post reclassification check:** number of plots with a discrepancy - number of plots reclassified (should be 0) = `r length(plots_fertilized) - (sum(df$fertilized, na.rm = T) - nb_plots_fertilized)`
+
+
+# Matching new and old binary columns
+In this step, we identify and correct discrepancies between the newly created and corrected binary column, and the former ones.
+Here, we consider that mown == 1 or grazed == 1 is always correct, since it is based on the above correction (based either on the broad land-use or on the mowing / grazing intensity).
+Thus, we only identify (and potentialy correct) plots for which the old binary column is 0 or NA and the new one is not 0 or NA.
+
+## Mowing
+```{r, echo = F}
+df%>%
+  group_by(`mown`, `Mowing (1/0)`)%>%
+  summarise(n=n())%>%
+  spread(`mown`, n)%>%
+  kable(caption = 'Contingency table of columns mown and Mowing (1/0)')%>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+### Datasets with discrepancies between mown and Mowing (1/0) (automatic report):
+```{r, echo = F, results = 'asis'}
+unique_binary <- df %>%
+    filter(`mown` == 0 | is.na(mown))%>%
+    distinct(`Mowing (1/0)`)%>%
+    pull()
+
+unique_binary <- unique_binary[!is.na(unique_binary) & unique_binary != 0]
+
+for(i in unique_binary){
+    nb_plots_0 <- df %>%
+        filter(`mown` == 0 & `Mowing (1/0)` == i)%>%
+        distinct(`GrassPlot ID of plot`)%>% count()
+    
+    names_datasets_0 <- df %>%
+        filter(`mown` == 0 & `Mowing (1/0)` == i)%>%
+        distinct(`Dataset ID`)%>% pull()
+    
+    nb_plots_NA <- df %>%
+        filter(is.na(`mown`) & `Mowing (1/0)` == i)%>%
+        distinct(`GrassPlot ID of plot`)%>% count()
+    
+    names_datasets_NA <- df %>%
+        filter(is.na(`mown`) & `Mowing (1/0)` == i)%>%
+        distinct(`Dataset ID`)%>% pull()
+    
+    if(nb_plots_0 != 0){
+        cat(paste("\nThe dataset(s)", paste(names_datasets_0, collapse = ", "), "contain(s)", 
+                    nb_plots_0, "plots with mown == 0 and Mowing (1/0) =", i))
+        cat('\n')
+    }
+    if(nb_plots_NA != 0){
+        cat(paste("\nThe dataset(s)", paste(names_datasets_NA, collapse = ", "), "contain(s)",
+                    nb_plots_NA, "plots with mown = NA and Mowing (1/0) =", i))
+        cat('\n')
+    }
+}
+```
+
+#### Manual verification of discrepancies (has to be updated manually if necessary for each version of the masterfile)
+##### *Datasets containing plots with mown = NA & Mowing (1/0) == ? (new vs former column):*
+The following plots in PL_A have mown = NA and Mowing (1/0) == '?'
+```{r, echo = F}
+df %>% 
+  filter(is.na(`mown`) & `Mowing (1/0)` == '?')%>%
+    distinct(`GrassPlot ID of plot`)%>%
+    pull()
+```
+No additional information could be found, so the plots are left with mown = NA
+
+#### Check
+```{r, echo = F}
+df%>%
+  group_by(`mown`, `Mowing (1/0)`)%>%
+  summarise(n=n())%>%
+  spread(`mown`, n)%>%
+  kable(caption = 'Contingency table of columns mown and Mowing (1/0) after reclassification (check)')%>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+## Grazing
+```{r, echo = F}
+df%>%
+  group_by(`grazed`, `Grazing (1/0)`)%>%
+  summarise(n=n())%>%
+  spread(`grazed`, n)%>%
+  kable(caption = 'Contingency table of columns grazed and Grazing (1/0)')%>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+### Datasets with discrepancies between grazed and Grazing (1/0) (automatic report):
+```{r, echo = F, results = 'asis'}
+unique_binary <- df %>%
+    filter(`grazed` == 0 | is.na(grazed))%>%
+    distinct(`Grazing (1/0)`)%>%
+    pull()
+
+unique_binary <- unique_binary[!is.na(unique_binary) & unique_binary != 0]
+
+for(i in unique_binary){
+    nb_plots_0 <- df %>%
+        filter(`grazed` == 0 & `Grazing (1/0)` == i)%>%
+        distinct(`GrassPlot ID of plot`)%>% count()
+    
+    names_datasets_0 <- df %>%
+        filter(`grazed` == 0 & `Grazing (1/0)` == i)%>%
+        distinct(`Dataset ID`)%>% pull()
+    
+    nb_plots_NA <- df %>%
+        filter(is.na(`grazed`) & `Grazing (1/0)` == i)%>%
+        distinct(`GrassPlot ID of plot`)%>% count()
+    
+    names_datasets_NA <- df %>%
+        filter(is.na(`grazed`) & `Grazing (1/0)` == i)%>%
+        distinct(`Dataset ID`)%>% pull()
+    
+    if(nb_plots_0 != 0){
+        cat(paste("\nThe dataset(s)", paste(names_datasets_0, collapse = ", "), "contain(s)", 
+                    nb_plots_0, "plots with grazed == 0 and Grazing (1/0) =", i))
+        cat('\n')
+    }
+    if(nb_plots_NA != 0){
+        cat(paste("\nThe dataset(s)", paste(names_datasets_NA, collapse = ", "), "contain(s)",
+                    nb_plots_NA, "plots with grazed = NA and Grazing (1/0) =", i))
+        cat('\n')
+    }
+}
+```
+
+#### Manual verification of discrepancies (has to be updated manually if necessary for each version of the masterfile)
+##### *Datasets plots with grazed = NA & Grazing (1/0) == '?':*
+The following plots in PL_A have grazed = NA and Grazing (1/0) == '?'
+```{r echo = F}
+df %>%
+    filter(is.na(`grazed`) & `Grazing (1/0)` == '?')%>%
+    distinct(`GrassPlot ID of plot`)%>% 
+    pull()
+```
+No additional information could be found, so the plots are left as grazed = NA  
+
+##### *Datasets plots with grazed == 0 & Grazing (1/0) == 'probably':*
+The following plots in PL_A have grazed == 0 and Grazing (1/0) == ''probably'
+```{r echo = F}
+df %>%
+    filter(`grazed` == 0 & `Grazing (1/0)` == 'probably' )%>%
+    distinct(`GrassPlot ID of plot`)%>% 
+    pull()
+```
+No additional information could be found, so the plots are left as grazed == 0.
+
+
+##### *Datasets plots with grazed == 0 & Grazing (1/0) == '1':*
+The following plots in PL_A have grazed == 0 and Grazing (1/0) == 1
+```{r echo = F}
+df %>%
+    filter(`grazed` == '0' & `Grazing (1/0)` == '1' )%>%
+    distinct(`GrassPlot ID of plot`)%>% 
+    pull()
+```
+  * PL_A contains 6 plots (PL_A_N005_xxxxb) noted as abandoned with 'occasionally grazed or trampled' in the detailed column (column 96). These plots will be classified as grazed in the new binary column.
+
+```{r}
+df[df$`grazed` %in% '0' & df$`Grazing (1/0)` %in% '1',]%<>% 
+    mutate(grazed = 1)
+```
+
+#### Check
+```{r, echo = F}
+df%>%
+  group_by(`grazed`, `Grazing (1/0)`)%>%
+  summarise(n=n())%>%
+  spread(`grazed`, n)%>%
+  kable(caption = 'Contingency table of columns grazed and Grazing (1/0) after reclassification (check')%>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+
+
+## Burning
+```{r, echo = F}
+df%>%
+  group_by(`burnt`, `Burning (1/0)`)%>%
+  summarise(n=n())%>%
+  spread(`burnt`, n)%>%
+  kable(caption = 'Contingency table of columns burnt and Burning (1/0)')%>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+### Datasets with discrepancies between burnt and Burning (1/0) (automatic report):
+```{r, echo = F, results = 'asis'}
+unique_binary <- df %>%
+    filter(`burnt` == 0 | is.na(burnt))%>%
+    distinct(`Burning (1/0)`)%>%
+    pull()
+
+unique_binary <- unique_binary[!is.na(unique_binary) & unique_binary != 0]
+
+for(i in unique_binary){
+    nb_plots_0 <- df %>%
+        filter(`burnt` == 0 & `Burning (1/0)` == i)%>%
+        distinct(`GrassPlot ID of plot`)%>% count()
+    
+    names_datasets_0 <- df %>%
+        filter(`burnt` == 0 & `Burning (1/0)` == i)%>%
+        distinct(`Dataset ID`)%>% pull()
+    
+    nb_plots_NA <- df %>%
+        filter(is.na(`burnt`) & `Burning (1/0)` == i)%>%
+        distinct(`GrassPlot ID of plot`)%>% count()
+    
+    names_datasets_NA <- df %>%
+        filter(is.na(`burnt`) & `Burning (1/0)` == i)%>%
+        distinct(`Dataset ID`)%>% pull()
+    
+    if(nb_plots_0 != 0){
+        cat(paste("\nThe dataset(s)", paste(names_datasets_0, collapse = ", "), "contain(s)", 
+                    nb_plots_0, "plots with burnt == 0 and Burning (1/0) =", i))
+      cat('\n')
+    }
+    if(nb_plots_NA != 0){
+        cat(paste("\nThe dataset(s)", paste(names_datasets_NA, collapse = ", "), "contain(s)",
+                    nb_plots_NA, "plots with burnt = NA and Burning (1/0) =", i))
+      cat('\n')
+    }
+}
+```
+
+#### Manual verification of discrepancies (has to be updated manually if necessary for each version of the masterfile)
+##### *Datasets with burnt == 0 and Burning (1/0) == 1*
+The following plots have burnt = 0 and Burning (1/0) == '1':
+```{r echo = F}
+df %>%
+    filter(burnt == 0 & `Burning (1/0)` == '1' )%>%
+    distinct(`GrassPlot ID of plot`)%>% 
+    pull()
+```
+
+No other information are found. These plots are reclassified with burnt == 1
+
+```{r}
+df[df$burnt %in% 0 & df$`Burning (1/0)` %in% '1',]%<>%
+    mutate(burnt = 1)
+```
+
+##### *Datasets with burnt = NA and Burning (1/0) == 1*
+The following plots have burnt = NA and Burning (1/0) == '?':
+```{r echo = F}
+df %>%
+    filter(is.na(burnt) & `Burning (1/0)` == '1')%>%
+    distinct(`GrassPlot ID of plot`)%>% 
+    pull()
+```
+No other information are found. These plots are reclassified with burnt == 1
+
+```{r}
+df[is.na(df$burnt) & df$`Burning (1/0)` %in% '1',]%<>%
+    mutate(burnt = 1)
+```
+
+
+##### *Datasets with burnt = NA and Burning (1/0) == ?*
+The following plots have burnt == 0 and Burning (1/0) == '?':
+```{r echo = F}
+df %>%
+    filter(burnt ==0 & `Burning (1/0)` == '?' )%>%
+    distinct(`GrassPlot ID of plot`)%>% 
+    pull()
+```
+No additional information could be found, so the plots are left as burnt == 0.
+
+#### Check
+```{r, echo = F}
+df%>%
+  group_by(`burnt`, `Burning (1/0)`)%>%
+  summarise(n=n())%>%
+  spread(`burnt`, n)%>%
+  kable(caption = 'Contingency table of columns burnt and Burning (1/0) after reclassification (check)')%>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+## Fertilization
+Non applicable so far, since the old binary column was an intensity one.
+
+# Proposal for a new land-use template
+```{r, echo = F}
+# Creer un tableau de recap
+```
+
+The column 96 provide a lot of information that is so far not fully exploited.
+To make use of it, it requires to manually check each of the value in this column, to fill other columns.
+After the Skype meeting (26th), I propose the following columns types:  
+
+## Land-use
+Already explained above, these are binary columns providing information on the land-use
+There is one extra column that contains verbal information not found in these five columns.  
+
+  * mown
+  * grazed
+  * burnt
+  * fertilized
+  * abandoned
+  * natural
+  * other  
+
+## Land-use intensity
+### Mowing
+  * mowing_frequency. Numeric, from 0 to infinite. Number of cut(s) per year  
+  
+### Grazing
+  * grazing_intensity. Numeric, from 0 to 1. Self reported relative intensity of grazing.
+  * grazing_load. Numeric, from 0 to infinite. Grazing animal load/ha./year (maybe expressed as equivalent cattle)  
+  
+### Burning
+  * burning_frequency. Numeric, from 0 to infinite. Number of burning(s) per year  
+  
+### Fertilization
+  * fertilization_intensity. Numeric, from 0 to 1. Self reported relative intensity of fertilization
+  * fertilization_type. Text, 'synthetic' or 'natural'.
+  * fertilization_details. Text, free values. Details not present in the tzo previous column (**e.g.** frequency, amount, type of chemical fertilizer...)  
+
+
+## Abandonement
+  * years_abandonment. Numeric, from 0 to infinity. Time since abandonment in years
+  * former_land_use: Text, 4 values that can be combined (arable, mown, grazed, burnt). Land-use before abandonment.  
+
+## Grazing details
+  * grazing_animal: Text, free values that can be combined, spearated by '/'. New values should be added in agreement with the DB manager.Type of animal grazing the land.   
+
+## Land destination
+  * land_destination: Text, 3 possible values (cropland, farmland, recreational). The primary intent behind the land-use.  
+
+## Grassland type
+  * primary_grassland: Numeric, 0 or 1. Is the grassland primary (1) or secondary (0)?  
+
+
+Table: Summary of the proposed template (**to be discussed**)
+
++------------+--------------------------+-------------+------------------------+
+|Column type | Column name              |  Variable   | Possible values        |
+|            |                          |type         |                        |
++============+==========================+=============+========================+
+| Land use   |- mown                    | - binary    | - 0/1                  |
+|            |- grazed                  | - binary    | - 0/1                  |
+|            |- burnt                   | - binary    | - 0/1                  |
+|            |- fertilized              | - binary    | - 0/1                  |
+|            |- abandoned               | - binary    | - 0/1                  |
+|            |- natural                 | - binary    | - 0/1                  |
+|            |- other                   | - text      | - free                 |
++------------+--------------------------+-------------+------------------------+
+| Land-use   |- grazing_intensity       | - numeric   | - 0 to 1               |
+| intensity  |- grazing_load            | - numeric   | - 0 to infinity        |
+|            |- mowing_frequency        | - numeric   | - 0 to infinity        |
+|            |- burning_frequency       | - numeric   | - 0 to infinity        |
+|            |- fertilization_intensity | - text      | - 0 to 1               |
+|            |- fertilization_type      | - numeric   | - synthetic/natural    |
+|            |- fertilization_details   | - text      | - free                 |
++------------+--------------------------+-------------+------------------------+
+| Abandonment|- years_abandonment       | - numeric   | - 0 to infinity        |
+|            |- former_land_use         | - text      | - arable, mown, grazed |
+|            |                          |             | burnt                  |
++------------+--------------------------+-------------+------------------------+
+| Grazing    |- grazing animal          | - text      | - free                 |
+| details    |                          |             |                        |
++------------+--------------------------+-------------+------------------------+
+| Land       |- land_destination        | - text      | - cropland, farmland,  |
+|destination |                          |             |recreational            |
++------------+--------------------------+-------------+------------------------+
+| Grassland  |- primary_grassland       | - numeric   | - 0/1                  |
+|type        |                          |             |                        |
++------------+--------------------------+-------------+------------------------+
+
+
+## Hamonizing the land-use details column
+The following adds the columns not existing yet in the DB, and export the template, with one row per unique value of the land-use detail column.  
+This exported file is to be checked manually, in order to fill in the template. To help the sorting, the plots and/or dataset name is left.  
+In a second step, it will be reintegrated to the DB, to finalize the harmonization
+```{r}
+names(df)[which(names(df) == 'Land use detail (e.g. number of cuts or years since abandonment)')] <- "land_use_details"
+
+template_names <- c('mown','grazed','burnt','fertilized','abandoned',
+                    'natural','other','grazing_intensity','grazing_load',
+                    'mowing_frequency','burning_frequency',
+                    'fertilization_intensity','fertilization_type',
+                    'fertilization_details','years_abandonment',
+                    'former_land_use','grazing animal','land_destination',
+                    'primary_grassland')
+
+df_details <- df[match(unique(df$land_use_details), df$land_use_details),]
+
+for(colname in template_names){
+  if(!colname %in% names(df_details))
+    df_details[,colname] <- NA
+}
+
+df_details <- df_details[,c('GrassPlot ID of plot', 'land_use_details', template_names)]
+
+
+write_xlsx(df_details, path = file.path(path_grassplot, 'df_details.xlsx'))
+```
+
+

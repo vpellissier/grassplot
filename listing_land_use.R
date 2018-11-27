@@ -5,11 +5,11 @@ library(tidyverse)
 path_grassplot <- 'C:/Users/pellissi/Documents/GrassPlot composition data'
 
 # dataframe with all the informations at a plot level
-df <- read_excel(file.path(path_grassplot, "GrassPlot 1.8_original.xlsx" ),
+df <- read_excel(file.path(path_grassplot, "GrassPlot 1.19.xlsx" ),
                                  sheet = 'Data', 
                                  col_types = c(rep('guess', 94), rep('text', 10)))
 
-saveRDS(df, file.path(path_grassplot, 'Grassplot 1.8_Data.rds'))
+saveRDS(df, file.path(path_grassplot, 'Grassplot 1.19_Data.rds'))
 
 # Only little info in this one about land-use data, but useful to extract 
 # compositional datasets
