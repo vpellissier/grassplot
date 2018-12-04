@@ -1,7 +1,7 @@
 ---
 title: "Land-use data harmonization"
 author: "Vincent Pellissier"
-date: "27 November 2018"
+date: "4 December 2018"
 header-includes:
    - \usepackage{float}
 output:
@@ -28,11 +28,11 @@ library(float)
 path_grassplot <- './'
 ```
 This report explains the steps taken to correct the land-use data.
-The masterfile used is the version 1.19, as found on November 27th 2018.
-The sheet in Grassplot 1.19.xlsx containing the LU information is the sheet 'datasets' and was read and saved as a .rds file to ease the process (faster loading)
+The masterfile used is the version 1.20, as found on December 4th 2018.
+The sheet in Grassplot 1.20.xlsx containing the LU information is the sheet 'datasets' and was read and saved as a .rds file to ease the process (faster loading)
 
 ```{r, echo = T}
-df <- readRDS(file.path(path_grassplot, 'Grassplot 1.19_Data.rds'))
+df <- readRDS(file.path(path_grassplot, 'Grassplot 1.20_Data.rds'))
 df <- df %>%
         mutate_at(.vars = c(95:104), funs(ifelse(. %in% c('NA', '[NA]'), NA, .)))
 ```
@@ -96,7 +96,7 @@ non_num_abandonment <- setdiff(numeric_abandonment_values, numeric_abandonment_v
 nb_mowing <- sum(table(df$mowing_frequency)[names(table(df$mowing_frequency)) != 0])
 nb_grazing <- sum(table(df$grazing_intensity)[names(table(df$grazing_intensity)) != 0])
 nb_fertilization <- sum(table(df$fertilization_intensity)[names(table(df$fertilization_intensity)) != 0])
-nb_fertilization <- sum(table(df$years_abandonment)[names(table(df$years_abandonment)) != 0])
+nb_abandonment <- sum(table(df$years_abandonment)[names(table(df$years_abandonment)) != 0])
 ```
 
 These three columns (mowing_frequency, grazing_intensity, fertilization_intensity) are presently coded as text columns  
@@ -114,7 +114,7 @@ The column is converted to numerical, meaning that we lose the information for n
 df$mowing_frequency <- as.numeric(df$mowing_frequency)
 ```
 
-**Post correction check**: original number of plots with frequency - present number of plots with frequency (should be 0) = `r nb_mowing - sum(table(df$mowing_frequency)[names(table(df$mowing_frequency)) != 0])`. **Manual note** The difference here is due to the removal of the plots with mowing_frequency =='x'.  
+**Post correction check**: original number of plots with frequency - present number of plots with frequency (should be 0) = `r nb_mowing - sum(table(df$mowing_frequency)[names(table(df$mowing_frequency)) != 0])`. **Manual note** The difference here is due to the removal of the plots with mowing_frequency =='x' and mowing_frequency == "fluctuating mowing and abandonment decades before the sampling".  
 
 ## Grazing intensity
 The grazing_intensity does have non-numerical values.
@@ -668,7 +668,7 @@ for(colname in template_names){
 df_details <- df_details[,c('GrassPlot ID of plot', 'land_use_details', template_names)]
 
 
-write_xlsx(df_details, path = file.path(path_grassplot, 'df_details_v1.19.xlsx'))
+write_xlsx(df_details, path = file.path(path_grassplot, 'df_details_v1.20.xlsx'))
 ```
 
 

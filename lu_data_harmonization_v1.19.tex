@@ -1,0 +1,1311 @@
+\documentclass[table]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Land-use data harmonization},
+            pdfauthor={Vincent Pellissier},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{longtable,booktabs}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{Land-use data harmonization}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{Vincent Pellissier}
+  \preauthor{\centering\large\emph}
+  \postauthor{\par}
+  \predate{\centering\large\emph}
+  \postdate{\par}
+  \date{27 November 2018}
+
+\usepackage{float}
+
+\begin{document}
+\maketitle
+
+This report explains the steps taken to correct the land-use data. The
+masterfile used is the version 1.20, as found on December 4th 2018. The
+sheet in Grassplot 1.20.xlsx containing the LU information is the sheet
+`datasets' and was read and saved as a .rds file to ease the process
+(faster loading)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df <-}\StringTok{ }\KeywordTok{readRDS}\NormalTok{(}\KeywordTok{file.path}\NormalTok{(path_grassplot, }\StringTok{'Grassplot 1.20_Data.rds'}\NormalTok{))}
+\NormalTok{df <-}\StringTok{ }\NormalTok{df }\OperatorTok{%>%}
+\StringTok{        }\KeywordTok{mutate_at}\NormalTok{(}\DataTypeTok{.vars =} \KeywordTok{c}\NormalTok{(}\DecValTok{95}\OperatorTok{:}\DecValTok{104}\NormalTok{), }\KeywordTok{funs}\NormalTok{(}\KeywordTok{ifelse}\NormalTok{(. }\OperatorTok{%in%}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{'NA'}\NormalTok{, }\StringTok{'[NA]'}\NormalTok{), }\OtherTok{NA}\NormalTok{, .)))}
+\end{Highlighting}
+\end{Shaded}
+
+The columns 98 (mowing frequency) and 100 (grazing intensity) are
+renamed as \texttt{mowing\_frequency} and \texttt{grazing\ intensity}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{names}\NormalTok{(df)[}\KeywordTok{which}\NormalTok{(}\KeywordTok{names}\NormalTok{(df) }\OperatorTok{%in%}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{'Mowing frequency: cuts per year (2=2cut/yr; 1=1cut/yr; 0.5=1 cut/2 yr or 2 yr abandoned; 0.2=1 cut/5 yr or 5 yr abandones; 0=never mown)'}\NormalTok{, }\StringTok{'Grazing intensity (0/1) 1= intensive grazing'}\NormalTok{))] <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{'mowing_frequency'}\NormalTok{, }\StringTok{'grazing_intensity'}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+The column 104 (Fertilized (1/0)) should be a binary column. Yet, it
+contains the values c(``0'', ``1'', ``0.5'', ``0.3''), meaning that it
+is an intensity column. The column is thus renamed
+\texttt{fertilization\_intensity}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{names}\NormalTok{(df)[}\KeywordTok{which}\NormalTok{(}\KeywordTok{names}\NormalTok{(df) }\OperatorTok{==}\StringTok{ 'Fertilized (1/0)'}\NormalTok{)] <-}\StringTok{ 'fertilization_intensity'}
+\end{Highlighting}
+\end{Shaded}
+
+The column 103 (Ex arable years (years since last ploughing)) is renamed
+\texttt{years\_abandonment}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{names}\NormalTok{(df)[}\KeywordTok{which}\NormalTok{(}\KeywordTok{names}\NormalTok{(df) }\OperatorTok{==}\StringTok{ 'Ex arable years (years since last ploughing)'}\NormalTok{)] <-}\StringTok{ 'years_abandonment'}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{PRELIMINARY NOTE: there are duplicated ID in the column
+\texttt{Grassplot\ ID\ of\ plot}. The following ID are duplicated
+DE\_B\_N001\_0.0001aa, NA}
+
+\section{Correction of the land use
+column}\label{correction-of-the-land-use-column}
+
+The file lookup\_table\_LU.xlsx contains two sheets:
+
+\begin{itemize}
+\tightlist
+\item
+  land\_use\_detail: lookup table between the column 96 and other
+  column. This needs to be discussed further before I finalize the
+  table.
+\item
+  global\_land\_use: lookuptable matching the values in column 95 with a
+  new classification. This new classification is a set of binary columns
+  (allowing for mixed land-use) plus one declarative column. Each binary
+  column correspond to a management practice (grazed, mown, burnt,
+  fertilized, abandoned, natural\_grassland), the declarative column
+  stores additional information that cannot be put in one of the 6
+  columns (\emph{i.e} trampled) and that will be used afterward.
+  \textbf{NOTE} LAS, P, L were noted as land-use for the dataset PL\_C
+  and N was noted as land-use for the dataset RU\_J. I could not find
+  what these stand for. I assumed that these plots don't have a land-use
+  but the info is still in the column `other'.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lut <-}\StringTok{ }\KeywordTok{read_excel}\NormalTok{(}\KeywordTok{file.path}\NormalTok{(path_grassplot, }\StringTok{"lookup_table_LU.xlsx"}\NormalTok{ ),}
+                 \DataTypeTok{sheet =} \StringTok{'global_land_use'}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+The global\_land\_use lookup table is used to harmonize the column 95
+with the new binary columns:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df <-}\StringTok{ }\NormalTok{df }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{left_join}\NormalTok{(lut, }
+              \DataTypeTok{by =} \KeywordTok{c}\NormalTok{(}\StringTok{"Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA)"}\NormalTok{ =}\StringTok{ "old_classification"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Correction of the intensity/frequency/duration
+columns}\label{correction-of-the-intensityfrequencyduration-columns}
+
+These three columns (mowing\_frequency, grazing\_intensity,
+fertilization\_intensity) are presently coded as text columns\\
+The column mowing\_frequency contains 2 non-numeric values :
+x,fluctuating mowing and abandonment decades before the sampling.\\
+The column grazing\_intensity contains 4 non-numeric values : low,
+middle, high, overgrazing.\\
+The column fertilization\_intensity contains 0 non-numeric values .\\
+The column years\_abandonment contains 0 non-numeric values .
+
+\subsection{Mowing frequency}\label{mowing-frequency}
+
+The mowing\_frequency does have non-numerical values.\\
+A closer look (manual) at the master files shows that there is some
+information in the column 96, that can be converted into
+mowing\_frequency.\\
+The column is converted to numerical, meaning that we lose the
+information for now, but it will be retrieved later using the column 96.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df}\OperatorTok{$}\NormalTok{mowing_frequency <-}\StringTok{ }\KeywordTok{as.numeric}\NormalTok{(df}\OperatorTok{$}\NormalTok{mowing_frequency)}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Post correction check}: original number of plots with frequency
+- present number of plots with frequency (should be 0) = 703.
+\textbf{Manual note} The difference here is due to the removal of the
+plots with mowing\_frequency ==`x'.
+
+\subsection{Grazing intensity}\label{grazing-intensity}
+
+The grazing\_intensity does have non-numerical values. The verbal
+descriptors low, middle, high, overgrazing are replaced by numerical
+values and the column is converted to numerical:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{overgrazing} and \texttt{high} are replaced by 1
+\item
+  \texttt{middle} is replaced by 0.5
+\item
+  \texttt{low} is replaced by 0.1
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df[df}\OperatorTok{$}\NormalTok{grazing_intensity }\OperatorTok{%in%}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{'overgrazing'}\NormalTok{, }\StringTok{'high'}\NormalTok{),]}\OperatorTok{%<>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{grazing_intensity =} \DecValTok{1}\NormalTok{)}
+
+\NormalTok{df[df}\OperatorTok{$}\NormalTok{grazing_intensity }\OperatorTok{%in%}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{'middle'}\NormalTok{),]}\OperatorTok{%<>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{grazing_intensity =} \FloatTok{0.5}\NormalTok{)}
+
+\NormalTok{df[df}\OperatorTok{$}\NormalTok{grazing_intensity }\OperatorTok{%in%}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{'low'}\NormalTok{),]}\OperatorTok{%<>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{grazing_intensity =} \FloatTok{0.1}\NormalTok{)}
+
+\NormalTok{df}\OperatorTok{$}\NormalTok{grazing_intensity <-}\StringTok{ }\KeywordTok{as.numeric}\NormalTok{(df}\OperatorTok{$}\NormalTok{grazing_intensity)}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Post correction check}: original number of plots with intensity
+- present number of plots with intensity (should be 0) = 0.
+
+\subsection{Fertilization intensity}\label{fertilization-intensity}
+
+The fertilization\_intensity column does not have non-numerical
+values.\\
+The column is converted to numerical.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df}\OperatorTok{$}\NormalTok{fertilization_intensity <-}\StringTok{ }\KeywordTok{as.numeric}\NormalTok{(df}\OperatorTok{$}\NormalTok{fertilization_intensity)}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Post correction check}: original number of plots with intensity
+- present number of plots with intensity (should be 0) = -334.
+
+\subsection{Abandonment length}\label{abandonment-length}
+
+The year\_abandonment column does not have non-numerical values. The
+column is converted to numeric.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df}\OperatorTok{$}\NormalTok{years_abandonment <-}\StringTok{ }\KeywordTok{as.numeric}\NormalTok{(df}\OperatorTok{$}\NormalTok{years_abandonment)}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Matching new binary columns and frequency/intensity
+columns.}\label{matching-new-binary-columns-and-frequencyintensity-columns.}
+
+In this step, we identify datasets with discrepancies between the new
+binary columns and the matching intensity column to:
+
+\begin{itemize}
+\tightlist
+\item
+  Manually check in the original datasets or publications
+\item
+  Correct the discrepancies.
+\end{itemize}
+
+\textbf{NOTE} in the following, I assumed that if the
+intensity/frequency/duration column was non empty, but the binary was,
+the intensity/frequency/duration column takes precedence (\emph{i.e} if
+the frequency/intensity/duration, the binary column \textbf{HAS} to be
+== 1)
+
+\subsection{Mowing and mowing
+intensity}\label{mowing-and-mowing-intensity}
+
+\subsubsection{\texorpdfstring{\emph{Datasets containing plots for which
+mowing intensity \textgreater{} 0 \& mown != 1 (here and after, we refer
+to the new binary
+columns)}}{Datasets containing plots for which mowing intensity \textgreater{} 0 \& mown != 1 (here and after, we refer to the new binary columns)}}\label{datasets-containing-plots-for-which-mowing-intensity-0-mown-1-here-and-after-we-refer-to-the-new-binary-columns}
+
+\begin{itemize}
+\tightlist
+\item
+  The datasets CZ\_J, DE\_S, EU\_K contain 237 plots having a mowing
+  intensity but classified as mown == 0. These plots have been manually
+  checked the 8/11/2018 (masterfile v1.8) and contains not errors or
+  additional information. They are thus reclassified as mown == 1.\\
+  \textbf{NOTE} If necessary, we can discuss a frequency threshold the
+  classify a plot as mown or not.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df[df}\OperatorTok{$}\NormalTok{mowing_frequency }\OperatorTok{!=}\StringTok{ }\DecValTok{0} \OperatorTok{&}\StringTok{ }\OperatorTok{!}\KeywordTok{is.na}\NormalTok{(df}\OperatorTok{$}\NormalTok{mowing_frequency) }\OperatorTok{&}\StringTok{ }\NormalTok{df}\OperatorTok{$}\NormalTok{mown }\OperatorTok{==}\StringTok{ }\DecValTok{0}\NormalTok{,] }\OperatorTok{%<>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{mown =} \DecValTok{1}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Post reclassification check:} number of plots with a discrepancy
+- number of plots reclassified (should be 0) = 0
+
+\subsection{Grazing and Grazing
+intensity}\label{grazing-and-grazing-intensity}
+
+\subsubsection{\texorpdfstring{\emph{Datasets containing plots for which
+grazing intensity \textgreater{} 0 \& grazed !=
+1:}}{Datasets containing plots for which grazing intensity \textgreater{} 0 \& grazed != 1:}}\label{datasets-containing-plots-for-which-grazing-intensity-0-grazed-1}
+
+\begin{itemize}
+\tightlist
+\item
+  The datasets AZ\_B, EU\_K, IR\_A, PL\_D, TR\_B, UA\_G contain 1189
+  plots having a mowing intensity but classified as grazed == 0. These
+  plots have been manually checked the 8/11/2018 (masterfile v1.8) and
+  contains not errors or additional information. They are thus
+  reclassified as grazed == 1.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df[df}\OperatorTok{$}\NormalTok{grazing_intensity }\OperatorTok{!=}\StringTok{ }\DecValTok{0} \OperatorTok{&}\StringTok{ }\OperatorTok{!}\KeywordTok{is.na}\NormalTok{(df}\OperatorTok{$}\NormalTok{grazing_intensity) }\OperatorTok{&}\StringTok{ }\NormalTok{df}\OperatorTok{$}\NormalTok{grazed }\OperatorTok{==}\StringTok{ }\DecValTok{0}\NormalTok{,] }\OperatorTok{%<>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{grazed =} \DecValTok{1}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Post reclassification check:} number of plots with a discrepancy
+- number of plots reclassified (should be 0) = 0
+
+\subsection{Fertilization and fertiliation
+intensity}\label{fertilization-and-fertiliation-intensity}
+
+\subsubsection{\texorpdfstring{\emph{Datasets containing plots for which
+fertilization intensity \textgreater{} 0 \& fertilized != 1 (here and
+after, we refer to the new binary
+columns)}}{Datasets containing plots for which fertilization intensity \textgreater{} 0 \& fertilized != 1 (here and after, we refer to the new binary columns)}}\label{datasets-containing-plots-for-which-fertilization-intensity-0-fertilized-1-here-and-after-we-refer-to-the-new-binary-columns}
+
+\begin{itemize}
+\tightlist
+\item
+  The datasets DE\_S, ES\_P, EU\_K, PL\_D, TR\_A, TR\_B contain 433
+  plots having a fertilization intensity but classified as fertilized ==
+  0. These plots have \textbf{not} been manually verified (to be done).
+  They are thus reclassified as fertilized == 1.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df[df}\OperatorTok{$}\NormalTok{fertilization_intensity }\OperatorTok{!=}\StringTok{ }\DecValTok{0} \OperatorTok{&}\StringTok{ }\OperatorTok{!}\KeywordTok{is.na}\NormalTok{(df}\OperatorTok{$}\NormalTok{fertilization_intensity) }\OperatorTok{&}\StringTok{ }\NormalTok{df}\OperatorTok{$}\NormalTok{fertilized }\OperatorTok{==}\StringTok{ }\DecValTok{0}\NormalTok{,] }\OperatorTok{%<>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{fertilized =} \DecValTok{1}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Post reclassification check:} number of plots with a discrepancy
+- number of plots reclassified (should be 0) = 0
+
+\section{Matching new and old binary
+columns}\label{matching-new-and-old-binary-columns}
+
+In this step, we identify and correct discrepancies between the newly
+created and corrected binary column, and the former ones. Here, we
+consider that mown == 1 or grazed == 1 is always correct, since it is
+based on the above correction (based either on the broad land-use or on
+the mowing / grazing intensity). Thus, we only identify (and potentialy
+correct) plots for which the old binary column is 0 or NA and the new
+one is not 0 or NA.
+
+\subsection{Mowing}\label{mowing}
+
+\begin{table}[H]
+
+\caption{\label{tab:unnamed-chunk-18}Contingency table of columns mown and Mowing (1/0)}
+\centering
+\begin{tabular}[t]{l|r|r|r}
+\hline
+Mowing (1/0) & 0 & 1 & <NA>\\
+\hline
+? & NA & NA & 6\\
+\hline
+0 & 7990 & 213 & 22\\
+\hline
+1 & NA & 778 & NA\\
+\hline
+abandoned & NA & NA & 242\\
+\hline
+lawn mown 5-10/yr & NA & NA & 78\\
+\hline
+meadow abandoned c. 5 yr ago & NA & NA & 78\\
+\hline
+meadow mown 1/yr & NA & NA & 78\\
+\hline
+mown & NA & NA & 446\\
+\hline
+x & NA & NA & 18\\
+\hline
+NA & 149724 & 6067 & 22233\\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Datasets with discrepancies between mown and Mowing (1/0)
+(automatic
+report):}\label{datasets-with-discrepancies-between-mown-and-mowing-10-automatic-report}
+
+The dataset(s) AT\_E contain(s) 18 plots with mown = NA and Mowing (1/0)
+= x
+
+The dataset(s) DE\_F contain(s) 78 plots with mown = NA and Mowing (1/0)
+= meadow mown 1/yr
+
+The dataset(s) DE\_F contain(s) 78 plots with mown = NA and Mowing (1/0)
+= lawn mown 5-10/yr
+
+The dataset(s) DE\_F contain(s) 78 plots with mown = NA and Mowing (1/0)
+= meadow abandoned c. 5 yr ago
+
+The dataset(s) EU\_C contain(s) 446 plots with mown = NA and Mowing
+(1/0) = mown
+
+The dataset(s) EU\_C contain(s) 242 plots with mown = NA and Mowing
+(1/0) = abandoned
+
+The dataset(s) PL\_A contain(s) 6 plots with mown = NA and Mowing (1/0)
+= ?
+
+\paragraph{Manual verification of discrepancies (has to be updated
+manually if necessary for each version of the
+masterfile)}\label{manual-verification-of-discrepancies-has-to-be-updated-manually-if-necessary-for-each-version-of-the-masterfile}
+
+\subparagraph{\texorpdfstring{\emph{Datasets containing plots with mown
+= NA \& Mowing (1/0) == ? (new vs former
+column):}}{Datasets containing plots with mown = NA \& Mowing (1/0) == ? (new vs former column):}}\label{datasets-containing-plots-with-mown-na-mowing-10-new-vs-former-column}
+
+The following plots in PL\_A have mown = NA and Mowing (1/0) == `?'
+
+\begin{verbatim}
+## [1] "PL_A_N003_0.0001a" "PL_A_N003_0.001a"  "PL_A_N003_0.01a"  
+## [4] "PL_A_N003_0.1a"    "PL_A_N003_10a"     "PL_A_N003_1a"
+\end{verbatim}
+
+No additional information could be found, so the plots are left with
+mown = NA
+
+\paragraph{Check}\label{check}
+
+\begin{table}[H]
+
+\caption{\label{tab:unnamed-chunk-21}Contingency table of columns mown and Mowing (1/0) after reclassification (check)}
+\centering
+\begin{tabular}[t]{l|r|r|r}
+\hline
+Mowing (1/0) & 0 & 1 & <NA>\\
+\hline
+? & NA & NA & 6\\
+\hline
+0 & 7990 & 213 & 22\\
+\hline
+1 & NA & 778 & NA\\
+\hline
+abandoned & NA & NA & 242\\
+\hline
+lawn mown 5-10/yr & NA & NA & 78\\
+\hline
+meadow abandoned c. 5 yr ago & NA & NA & 78\\
+\hline
+meadow mown 1/yr & NA & NA & 78\\
+\hline
+mown & NA & NA & 446\\
+\hline
+x & NA & NA & 18\\
+\hline
+NA & 149724 & 6067 & 22233\\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Grazing}\label{grazing}
+
+\begin{table}[H]
+
+\caption{\label{tab:unnamed-chunk-22}Contingency table of columns grazed and Grazing (1/0)}
+\centering
+\begin{tabular}[t]{l|r|r|r}
+\hline
+Grazing (1/0) & 0 & 1 & <NA>\\
+\hline
+? & NA & 7 & 6\\
+\hline
+0 & 3585 & 13 & 17\\
+\hline
+1 & 136 & 6813 & NA\\
+\hline
+2 & NA & 1 & NA\\
+\hline
+probably & 6 & NA & NA\\
+\hline
+NA & 124921 & 29290 & 23178\\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Datasets with discrepancies between grazed and Grazing
+(1/0) (automatic
+report):}\label{datasets-with-discrepancies-between-grazed-and-grazing-10-automatic-report}
+
+The dataset(s) PL\_A contain(s) 6 plots with grazed = NA and Grazing
+(1/0) = ?
+
+The dataset(s) PL\_A contain(s) 6 plots with grazed == 0 and Grazing
+(1/0) = probably
+
+The dataset(s) PL\_A, UA\_L contain(s) 136 plots with grazed == 0 and
+Grazing (1/0) = 1
+
+\paragraph{Manual verification of discrepancies (has to be updated
+manually if necessary for each version of the
+masterfile)}\label{manual-verification-of-discrepancies-has-to-be-updated-manually-if-necessary-for-each-version-of-the-masterfile-1}
+
+\subparagraph{\texorpdfstring{\emph{Datasets plots with grazed = NA \&
+Grazing (1/0) ==
+`?':}}{Datasets plots with grazed = NA \& Grazing (1/0) == ?:}}\label{datasets-plots-with-grazed-na-grazing-10}
+
+The following plots in PL\_A have grazed = NA and Grazing (1/0) == `?'
+
+\begin{verbatim}
+## [1] "PL_A_N003_0.0001a" "PL_A_N003_0.001a"  "PL_A_N003_0.01a"  
+## [4] "PL_A_N003_0.1a"    "PL_A_N003_10a"     "PL_A_N003_1a"
+\end{verbatim}
+
+No additional information could be found, so the plots are left as
+grazed = NA
+
+\subparagraph{\texorpdfstring{\emph{Datasets plots with grazed == 0 \&
+Grazing (1/0) ==
+`probably':}}{Datasets plots with grazed == 0 \& Grazing (1/0) == probably:}}\label{datasets-plots-with-grazed-0-grazing-10-probably}
+
+The following plots in PL\_A have grazed == 0 and Grazing (1/0) ==
+`'probably'
+
+\begin{verbatim}
+## [1] "PL_A_N004_0.0001a" "PL_A_N004_0.001a"  "PL_A_N004_0.01a"  
+## [4] "PL_A_N004_0.1a"    "PL_A_N004_10a"     "PL_A_N004_1a"
+\end{verbatim}
+
+No additional information could be found, so the plots are left as
+grazed == 0.
+
+\subparagraph{\texorpdfstring{\emph{Datasets plots with grazed == 0 \&
+Grazing (1/0) ==
+`1':}}{Datasets plots with grazed == 0 \& Grazing (1/0) == 1:}}\label{datasets-plots-with-grazed-0-grazing-10-1}
+
+The following plots in PL\_A have grazed == 0 and Grazing (1/0) == 1
+
+\begin{verbatim}
+##   [1] "PL_A_N005_0.0001b" "PL_A_N005_0.001b"  "PL_A_N005_0.01b"  
+##   [4] "PL_A_N005_0.1b"    "PL_A_N005_10b"     "PL_A_N005_1b"     
+##   [7] "UA_L_N001_0.0001a" "UA_L_N001_0.0001b" "UA_L_N001_0.001a" 
+##  [10] "UA_L_N001_0.001b"  "UA_L_N001_0.01a"   "UA_L_N001_0.01b"  
+##  [13] "UA_L_N001_0.1a"    "UA_L_N001_0.1b"    "UA_L_N001_100"    
+##  [16] "UA_L_N001_10a"     "UA_L_N001_10b"     "UA_L_N001_1a"     
+##  [19] "UA_L_N001_1b"      "UA_L_N002_0.0001a" "UA_L_N002_0.0001b"
+##  [22] "UA_L_N002_0.001a"  "UA_L_N002_0.001b"  "UA_L_N002_0.01a"  
+##  [25] "UA_L_N002_0.01b"   "UA_L_N002_0.1a"    "UA_L_N002_0.1b"   
+##  [28] "UA_L_N002_100"     "UA_L_N002_10a"     "UA_L_N002_10b"    
+##  [31] "UA_L_N002_1a"      "UA_L_N002_1b"      "UA_L_N003_0.0001a"
+##  [34] "UA_L_N003_0.0001b" "UA_L_N003_0.001a"  "UA_L_N003_0.001b" 
+##  [37] "UA_L_N003_0.01a"   "UA_L_N003_0.01b"   "UA_L_N003_0.1a"   
+##  [40] "UA_L_N003_0.1b"    "UA_L_N003_100"     "UA_L_N003_10a"    
+##  [43] "UA_L_N003_10b"     "UA_L_N003_1a"      "UA_L_N003_1b"     
+##  [46] "UA_L_N004_0.0001a" "UA_L_N004_0.0001b" "UA_L_N004_0.001a" 
+##  [49] "UA_L_N004_0.001b"  "UA_L_N004_0.01a"   "UA_L_N004_0.01b"  
+##  [52] "UA_L_N004_0.1a"    "UA_L_N004_0.1b"    "UA_L_N004_100"    
+##  [55] "UA_L_N004_10a"     "UA_L_N004_10b"     "UA_L_N004_1a"     
+##  [58] "UA_L_N004_1b"      "UA_L_N005_0.0001a" "UA_L_N005_0.0001b"
+##  [61] "UA_L_N005_0.001a"  "UA_L_N005_0.001b"  "UA_L_N005_0.01a"  
+##  [64] "UA_L_N005_0.01b"   "UA_L_N005_0.1a"    "UA_L_N005_0.1b"   
+##  [67] "UA_L_N005_100"     "UA_L_N005_10a"     "UA_L_N005_10b"    
+##  [70] "UA_L_N005_1a"      "UA_L_N005_1b"      "UA_L_N006_0.0001a"
+##  [73] "UA_L_N006_0.0001b" "UA_L_N006_0.001a"  "UA_L_N006_0.001b" 
+##  [76] "UA_L_N006_0.01a"   "UA_L_N006_0.01b"   "UA_L_N006_0.1a"   
+##  [79] "UA_L_N006_0.1b"    "UA_L_N006_100"     "UA_L_N006_10a"    
+##  [82] "UA_L_N006_10b"     "UA_L_N006_1a"      "UA_L_N006_1b"     
+##  [85] "UA_L_N007_0.0001a" "UA_L_N007_0.0001b" "UA_L_N007_0.001a" 
+##  [88] "UA_L_N007_0.001b"  "UA_L_N007_0.01a"   "UA_L_N007_0.01b"  
+##  [91] "UA_L_N007_0.1a"    "UA_L_N007_0.1b"    "UA_L_N007_100"    
+##  [94] "UA_L_N007_10a"     "UA_L_N007_10b"     "UA_L_N007_1a"     
+##  [97] "UA_L_N007_1b"      "UA_L_N008_0.0001a" "UA_L_N008_0.0001b"
+## [100] "UA_L_N008_0.001a"  "UA_L_N008_0.001b"  "UA_L_N008_0.01a"  
+## [103] "UA_L_N008_0.01b"   "UA_L_N008_0.1a"    "UA_L_N008_0.1b"   
+## [106] "UA_L_N008_100"     "UA_L_N008_10a"     "UA_L_N008_10b"    
+## [109] "UA_L_N008_1a"      "UA_L_N008_1b"      "UA_L_N009_0.0001a"
+## [112] "UA_L_N009_0.0001b" "UA_L_N009_0.001a"  "UA_L_N009_0.001b" 
+## [115] "UA_L_N009_0.01a"   "UA_L_N009_0.01b"   "UA_L_N009_0.1a"   
+## [118] "UA_L_N009_0.1b"    "UA_L_N009_100"     "UA_L_N009_10a"    
+## [121] "UA_L_N009_10b"     "UA_L_N009_1a"      "UA_L_N009_1b"     
+## [124] "UA_L_N010_0.0001a" "UA_L_N010_0.0001b" "UA_L_N010_0.001a" 
+## [127] "UA_L_N010_0.001b"  "UA_L_N010_0.01a"   "UA_L_N010_0.01b"  
+## [130] "UA_L_N010_0.1a"    "UA_L_N010_0.1b"    "UA_L_N010_100"    
+## [133] "UA_L_N010_10a"     "UA_L_N010_10b"     "UA_L_N010_1a"     
+## [136] "UA_L_N010_1b"
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  PL\_A contains 6 plots (PL\_A\_N005\_xxxxb) noted as abandoned with
+  `occasionally grazed or trampled' in the detailed column (column 96).
+  These plots will be classified as grazed in the new binary column.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df[df}\OperatorTok{$}\StringTok{`}\DataTypeTok{grazed}\StringTok{`} \OperatorTok{%in%}\StringTok{ '0'} \OperatorTok{&}\StringTok{ }\NormalTok{df}\OperatorTok{$}\StringTok{`}\DataTypeTok{Grazing (1/0)}\StringTok{`} \OperatorTok{%in%}\StringTok{ '1'}\NormalTok{,]}\OperatorTok{%<>%}\StringTok{ }
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{grazed =} \DecValTok{1}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\paragraph{Check}\label{check-1}
+
+\begin{table}[H]
+
+\caption{\label{tab:unnamed-chunk-28}Contingency table of columns grazed and Grazing (1/0) after reclassification (check}
+\centering
+\begin{tabular}[t]{l|r|r|r}
+\hline
+Grazing (1/0) & 0 & 1 & <NA>\\
+\hline
+? & NA & 7 & 6\\
+\hline
+0 & 3585 & 13 & 17\\
+\hline
+1 & NA & 6949 & NA\\
+\hline
+2 & NA & 1 & NA\\
+\hline
+probably & 6 & NA & NA\\
+\hline
+NA & 124921 & 29290 & 23178\\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Burning}\label{burning}
+
+\begin{table}[H]
+
+\caption{\label{tab:unnamed-chunk-29}Contingency table of columns burnt and Burning (1/0)}
+\centering
+\begin{tabular}[t]{l|r|r}
+\hline
+Burning (1/0) & 0 & <NA>\\
+\hline
+? & 6 & NA\\
+\hline
+0 & 7542 & 62\\
+\hline
+1 & 187 & 3\\
+\hline
+x & NA & 34\\
+\hline
+NA & 157037 & 23102\\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Datasets with discrepancies between burnt and Burning
+(1/0) (automatic
+report):}\label{datasets-with-discrepancies-between-burnt-and-burning-10-automatic-report}
+
+The dataset(s) AT\_E contain(s) 34 plots with burnt = NA and Burning
+(1/0) = x
+
+The dataset(s) BY\_A, CH\_E, IR\_A, IT\_L, RS\_A, RU\_J, RU\_L, TJ\_A,
+UA\_G, UA\_I, UA\_J, UA\_L contain(s) 187 plots with burnt == 0 and
+Burning (1/0) = 1
+
+The dataset(s) BY\_A contain(s) 3 plots with burnt = NA and Burning
+(1/0) = 1
+
+The dataset(s) PL\_A contain(s) 6 plots with burnt == 0 and Burning
+(1/0) = ?
+
+\paragraph{Manual verification of discrepancies (has to be updated
+manually if necessary for each version of the
+masterfile)}\label{manual-verification-of-discrepancies-has-to-be-updated-manually-if-necessary-for-each-version-of-the-masterfile-2}
+
+\subparagraph{\texorpdfstring{\emph{Datasets with burnt == 0 and Burning
+(1/0) ==
+1}}{Datasets with burnt == 0 and Burning (1/0) == 1}}\label{datasets-with-burnt-0-and-burning-10-1}
+
+The following plots have burnt = 0 and Burning (1/0) == `1':
+
+\begin{verbatim}
+##   [1] "BY_A_P003"         "BY_A_P004"         "BY_A_P005"        
+##   [4] "CH_E_N003_0.0001b" "CH_E_N003_0.001b"  "CH_E_N003_0.01a"  
+##   [7] "CH_E_N003_0.01b"   "CH_E_N003_0.1a"    "CH_E_N003_0.1b"   
+##  [10] "CH_E_N003_100"     "CH_E_N003_10a"     "CH_E_N003_10b"    
+##  [13] "CH_E_N003_1a"      "CH_E_N003_1b"      "IR_A_N004_0.0001a"
+##  [16] "IR_A_N004_0.0001b" "IR_A_N004_0.001a"  "IR_A_N004_0.001b" 
+##  [19] "IR_A_N004_0.01a"   "IR_A_N004_0.01b"   "IR_A_N004_0.1a"   
+##  [22] "IR_A_N004_0.1b"    "IR_A_N004_1000"    "IR_A_N004_100a"   
+##  [25] "IR_A_N004_100b"    "IR_A_N004_10a"     "IR_A_N004_10b"    
+##  [28] "IR_A_N004_1a"      "IR_A_N004_1b"      "IR_A_N004_25a"    
+##  [31] "IR_A_N004_25b"     "IT_L_N004_0.0001a" "IT_L_N004_0.0001b"
+##  [34] "IT_L_N004_0.001a"  "IT_L_N004_0.001b"  "IT_L_N004_0.01a"  
+##  [37] "IT_L_N004_0.01b"   "IT_L_N004_0.1a"    "IT_L_N004_0.1b"   
+##  [40] "IT_L_N004_100"     "IT_L_N004_10a"     "IT_L_N004_10b"    
+##  [43] "IT_L_N004_1a"      "IT_L_N004_1b"      "RS_A_N010_100"    
+##  [46] "RS_A_N011_0.0001a" "RS_A_N011_0.0001b" "RS_A_N011_0.001a" 
+##  [49] "RS_A_N011_0.001b"  "RS_A_N011_0.01a"   "RS_A_N011_0.01b"  
+##  [52] "RS_A_N011_0.1a"    "RS_A_N011_0.1b"    "RS_A_N011_100"    
+##  [55] "RS_A_N011_10a"     "RS_A_N011_10b"     "RS_A_N011_1a"     
+##  [58] "RS_A_N011_1b"      "RU_J_P020"         "RU_J_P021"        
+##  [61] "RU_L_N001_0.0001a" "RU_L_N001_0.0001b" "TJ_A_N007_0.0001a"
+##  [64] "TJ_A_N007_0.0001b" "TJ_A_N007_0.001a"  "TJ_A_N007_0.001b" 
+##  [67] "TJ_A_N007_0.01a"   "TJ_A_N007_0.01b"   "TJ_A_N007_0.1a"   
+##  [70] "TJ_A_N007_0.1b"    "TJ_A_N007_100"     "TJ_A_N007_10a"    
+##  [73] "TJ_A_N007_10b"     "TJ_A_N007_1a"      "TJ_A_N007_1b"     
+##  [76] "TJ_A_N008_0.0001a" "TJ_A_N008_0.0001b" "TJ_A_N008_0.001a" 
+##  [79] "TJ_A_N008_0.001b"  "TJ_A_N008_0.01a"   "TJ_A_N008_0.01b"  
+##  [82] "TJ_A_N008_0.1a"    "TJ_A_N008_0.1b"    "TJ_A_N008_100"    
+##  [85] "TJ_A_N008_10a"     "TJ_A_N008_10b"     "TJ_A_N008_1a"     
+##  [88] "TJ_A_N008_1b"      "TJ_A_N014_0.0001a" "TJ_A_N014_0.0001b"
+##  [91] "TJ_A_N014_0.001a"  "TJ_A_N014_0.001b"  "TJ_A_N014_0.01a"  
+##  [94] "TJ_A_N014_0.01b"   "TJ_A_N014_0.1a"    "TJ_A_N014_0.1b"   
+##  [97] "TJ_A_N014_100"     "TJ_A_N014_10a"     "TJ_A_N014_10b"    
+## [100] "TJ_A_N014_1a"      "TJ_A_N014_1b"      "UA_G_N008_100"    
+## [103] "UA_G_N009_1"       "UA_G_N009_10"      "UA_G_N009_100"    
+## [106] "UA_G_N010_1"       "UA_G_N010_10"      "UA_G_N010_100"    
+## [109] "UA_G_N011_1"       "UA_G_N011_10"      "UA_G_N011_100"    
+## [112] "UA_G_N012_1"       "UA_G_N012_10"      "UA_G_N012_100"    
+## [115] "UA_I_N005_0.001a"  "UA_I_N005_0.001b"  "UA_I_N005_0.01a"  
+## [118] "UA_I_N005_0.01b"   "UA_I_N005_0.1a"    "UA_I_N005_0.1b"   
+## [121] "UA_I_N005_100"     "UA_I_N005_10a"     "UA_I_N005_10b"    
+## [124] "UA_I_N005_1a"      "UA_I_N005_1b"      "UA_I_N006_0.0001a"
+## [127] "UA_I_N006_0.0001b" "UA_J_N008_0.0001a" "UA_J_N008_0.0001b"
+## [130] "UA_J_N008_0.001a"  "UA_J_N008_0.001b"  "UA_J_N008_0.01a"  
+## [133] "UA_J_N008_0.01b"   "UA_J_N008_0.1a"    "UA_J_N008_0.1b"   
+## [136] "UA_J_N008_100"     "UA_J_N008_10a"     "UA_J_N008_10b"    
+## [139] "UA_J_N008_1a"      "UA_J_N008_1b"      "UA_J_N009_0.0001a"
+## [142] "UA_J_N009_0.0001b" "UA_J_N009_0.001a"  "UA_J_N009_0.001b" 
+## [145] "UA_J_N009_0.01a"   "UA_J_N009_0.01b"   "UA_J_N009_0.1a"   
+## [148] "UA_J_N009_0.1b"    "UA_J_N009_100"     "UA_J_N009_10a"    
+## [151] "UA_J_N009_10b"     "UA_J_N009_1a"      "UA_J_N009_1b"     
+## [154] "UA_J_P010"         "UA_J_P017"         "UA_J_P052"        
+## [157] "UA_J_P053"         "UA_J_P074"         "UA_J_P076"        
+## [160] "UA_J_P081"         "UA_J_P095"         "UA_L_N011_0.0001a"
+## [163] "UA_L_N011_0.0001b" "UA_L_N011_0.001a"  "UA_L_N011_0.001b" 
+## [166] "UA_L_N011_0.01a"   "UA_L_N011_0.01b"   "UA_L_N011_0.1a"   
+## [169] "UA_L_N011_0.1b"    "UA_L_N011_100"     "UA_L_N011_10a"    
+## [172] "UA_L_N011_10b"     "UA_L_N011_1a"      "UA_L_N011_1b"     
+## [175] "UA_L_N012_0.0001a" "UA_L_N012_0.0001b" "UA_L_N012_0.001a" 
+## [178] "UA_L_N012_0.001b"  "UA_L_N012_0.01a"   "UA_L_N012_0.01b"  
+## [181] "UA_L_N012_0.1a"    "UA_L_N012_0.1b"    "UA_L_N012_100"    
+## [184] "UA_L_N012_10a"     "UA_L_N012_10b"     "UA_L_N012_1a"     
+## [187] "UA_L_N012_1b"
+\end{verbatim}
+
+No other information are found. These plots are reclassified with burnt
+== 1
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df[df}\OperatorTok{$}\NormalTok{burnt }\OperatorTok{%in%}\StringTok{ }\DecValTok{0} \OperatorTok{&}\StringTok{ }\NormalTok{df}\OperatorTok{$}\StringTok{`}\DataTypeTok{Burning (1/0)}\StringTok{`} \OperatorTok{%in%}\StringTok{ '1'}\NormalTok{,]}\OperatorTok{%<>%}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{burnt =} \DecValTok{1}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\subparagraph{\texorpdfstring{\emph{Datasets with burnt = NA and Burning
+(1/0) ==
+1}}{Datasets with burnt = NA and Burning (1/0) == 1}}\label{datasets-with-burnt-na-and-burning-10-1}
+
+The following plots have burnt = NA and Burning (1/0) == `?':
+
+\begin{verbatim}
+## [1] "BY_A_P006" "BY_A_P007" "BY_A_P009"
+\end{verbatim}
+
+No other information are found. These plots are reclassified with burnt
+== 1
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df[}\KeywordTok{is.na}\NormalTok{(df}\OperatorTok{$}\NormalTok{burnt) }\OperatorTok{&}\StringTok{ }\NormalTok{df}\OperatorTok{$}\StringTok{`}\DataTypeTok{Burning (1/0)}\StringTok{`} \OperatorTok{%in%}\StringTok{ '1'}\NormalTok{,]}\OperatorTok{%<>%}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{burnt =} \DecValTok{1}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\subparagraph{\texorpdfstring{\emph{Datasets with burnt = NA and Burning
+(1/0) ==
+?}}{Datasets with burnt = NA and Burning (1/0) == ?}}\label{datasets-with-burnt-na-and-burning-10}
+
+The following plots have burnt == 0 and Burning (1/0) == `?':
+
+\begin{verbatim}
+## [1] "PL_A_N005_0.0001a" "PL_A_N005_0.001a"  "PL_A_N005_0.01a"  
+## [4] "PL_A_N005_0.1a"    "PL_A_N005_10a"     "PL_A_N005_1a"
+\end{verbatim}
+
+No additional information could be found, so the plots are left as burnt
+== 0.
+
+\paragraph{Check}\label{check-2}
+
+\begin{table}[H]
+
+\caption{\label{tab:unnamed-chunk-36}Contingency table of columns burnt and Burning (1/0) after reclassification (check)}
+\centering
+\begin{tabular}[t]{l|r|r|r}
+\hline
+Burning (1/0) & 0 & 1 & <NA>\\
+\hline
+? & 6 & NA & NA\\
+\hline
+0 & 7542 & NA & 62\\
+\hline
+1 & NA & 190 & NA\\
+\hline
+x & NA & NA & 34\\
+\hline
+NA & 157037 & NA & 23102\\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Fertilization}\label{fertilization}
+
+Non applicable so far, since the old binary column was an intensity one.
+
+\section{Former land-use.}\label{former-land-use.}
+
+\subsubsection{\texorpdfstring{\emph{Datasets containing plots for which
+years\_abandonment \textgreater{} 0 \& `Ex arable (1/0)' !=
+1:}}{Datasets containing plots for which years\_abandonment \textgreater{} 0 \& Ex arable (1/0) != 1:}}\label{datasets-containing-plots-for-which-years_abandonment-0-ex-arable-10-1}
+
+\begin{itemize}
+\tightlist
+\item
+  The datasets contain 0 plots having an abandonment duration but
+  classified as Ex arable == 0.
+\end{itemize}
+
+So far, the only former land-use (and years since abandonment)
+information is related to arable field. As we aim at creating a
+gathering information about the time since abandonment for every former
+land-use (arable, mown, grazed, burnt, recreational), we create a new
+text column \texttt{former\_land\_use}. Right now, this column only
+contains \texttt{arable}, but will be populated later.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df <-}\StringTok{ }\NormalTok{df}\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{former_land_use =} \KeywordTok{ifelse}\NormalTok{(}\StringTok{`}\DataTypeTok{Ex arable (1/0)}\StringTok{`} \OperatorTok{%in%}\StringTok{ }\DecValTok{1}\NormalTok{, }\StringTok{'arable'}\NormalTok{, }\OtherTok{NA}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Post creation check} number of plots with former\_land\_use ==
+`arable' - number of plots with Ex arable (1/0) == 1 (should be 0): 0
+
+\section{Proposal for a new land-use
+template}\label{proposal-for-a-new-land-use-template}
+
+The column 96 provide a lot of information that is so far not fully
+exploited. To make use of it, it requires to manually check each of the
+value in this column, to fill other columns. After the Skype meeting
+(26th), I propose the following columns types:
+
+\subsection{Land-use}\label{land-use}
+
+Already explained above, these are binary columns providing information
+on the land-use There is one extra column (other\_lu) that contains
+verbal information not found in these five columns.
+
+\begin{itemize}
+\tightlist
+\item
+  mown
+\item
+  grazed
+\item
+  burnt
+\item
+  fertilized
+\item
+  abandoned
+\item
+  natural
+\item
+  other\_lu
+\end{itemize}
+
+\subsection{Land-use intensity}\label{land-use-intensity}
+
+\subsubsection{Mowing}\label{mowing-1}
+
+\begin{itemize}
+\tightlist
+\item
+  mowing\_frequency. Numeric, from 0 to infinite. Number of cut(s) per
+  year
+\end{itemize}
+
+\subsubsection{Grazing}\label{grazing-1}
+
+\begin{itemize}
+\tightlist
+\item
+  grazing\_intensity. Numeric, from 0 to 1. Self reported relative
+  intensity of grazing.
+\item
+  grazing\_load. Numeric, from 0 to infinite. Grazing animal
+  load/ha./year (maybe expressed as equivalent cattle)
+\end{itemize}
+
+\subsubsection{Burning}\label{burning-1}
+
+\begin{itemize}
+\tightlist
+\item
+  burning\_frequency. Numeric, from 0 to infinite. Number of burning(s)
+  per year
+\end{itemize}
+
+\subsubsection{Fertilization}\label{fertilization-1}
+
+\begin{itemize}
+\tightlist
+\item
+  fertilization\_intensity. Numeric, from 0 to 1. Self reported relative
+  intensity of fertilization
+\item
+  fertilization\_type. Text, `synthetic' or `natural'.
+\item
+  fertilization\_details. Text, free values. Details not present in the
+  tzo previous column (\textbf{e.g.} frequency, amount, type of chemical
+  fertilizer\ldots{})
+\end{itemize}
+
+\subsection{Abandonement}\label{abandonement}
+
+\begin{itemize}
+\tightlist
+\item
+  years\_abandonment. Numeric, from 0 to infinity. Time since
+  abandonment in years
+\item
+  former\_land\_use: Text, 5 values that can be combined (arable, mown,
+  grazed, burnt, recreational). Land-use before abandonment.
+\end{itemize}
+
+\subsection{Grazing details}\label{grazing-details}
+
+\begin{itemize}
+\tightlist
+\item
+  grazing\_animal: Text, free values that can be combined, spearated by
+  `/'. New values should be added in agreement with the DB manager.Type
+  of animal grazing the land.
+\end{itemize}
+
+\subsection{Land destination}\label{land-destination}
+
+\begin{itemize}
+\tightlist
+\item
+  land\_destination: Text, 3 possible values (cropland, farmland,
+  recreational). The primary intent behind the land-use.
+\end{itemize}
+
+\subsection{Grassland type}\label{grassland-type}
+
+\begin{itemize}
+\tightlist
+\item
+  primary\_grassland: Numeric, 0 or 1. Is the grassland primary (1) or
+  secondary (0)?
+\end{itemize}
+
+\begin{longtable}[]{@{}llll@{}}
+\caption{Summary of the proposed template (\textbf{to be
+discussed})}\tabularnewline
+\toprule
+\begin{minipage}[b]{0.15\columnwidth}\raggedright\strut
+Column type\strut
+\end{minipage} & \begin{minipage}[b]{0.30\columnwidth}\raggedright\strut
+Column name\strut
+\end{minipage} & \begin{minipage}[b]{0.16\columnwidth}\raggedright\strut
+Variable type\strut
+\end{minipage} & \begin{minipage}[b]{0.28\columnwidth}\raggedright\strut
+Possible values\strut
+\end{minipage}\tabularnewline
+\midrule
+\endfirsthead
+\toprule
+\begin{minipage}[b]{0.15\columnwidth}\raggedright\strut
+Column type\strut
+\end{minipage} & \begin{minipage}[b]{0.30\columnwidth}\raggedright\strut
+Column name\strut
+\end{minipage} & \begin{minipage}[b]{0.16\columnwidth}\raggedright\strut
+Variable type\strut
+\end{minipage} & \begin{minipage}[b]{0.28\columnwidth}\raggedright\strut
+Possible values\strut
+\end{minipage}\tabularnewline
+\midrule
+\endhead
+\begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+Land use\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  mown
+\item
+  grazed
+\item
+  burnt
+\item
+  fertilized
+\item
+  abandoned
+\item
+  natural
+\item
+  other\_lu
+\end{itemize}\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  binary
+\item
+  binary
+\item
+  binary
+\item
+  binary
+\item
+  binary
+\item
+  binary
+\item
+  text
+\end{itemize}\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  0/1
+\item
+  0/1
+\item
+  0/1
+\item
+  0/1
+\item
+  0/1
+\item
+  0/1
+\item
+  free
+\end{itemize}\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+Land-use intensity\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  grazing\_intensity
+\item
+  grazing\_load
+\item
+  mowing\_frequency
+\item
+  burning\_frequency
+\item
+  fertilization\_intensity
+\item
+  fertilization\_type
+\item
+  fertilization\_details
+\end{itemize}\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  numeric
+\item
+  numeric
+\item
+  numeric
+\item
+  numeric
+\item
+  text
+\item
+  numeric
+\item
+  text
+\end{itemize}\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  0 to 1
+\item
+  0 to infinity
+\item
+  0 to infinity
+\item
+  0 to infinity
+\item
+  0 to 1
+\item
+  synthetic/natural
+\item
+  free
+\end{itemize}\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+Abandonment\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  years\_abandonment
+\item
+  former\_land\_use
+\end{itemize}\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  numeric
+\item
+  text
+\end{itemize}\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  0 to infinity
+\item
+  arable, mown, grazed burnt, recreational
+\end{itemize}\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+Grazing details\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  grazing animal
+\end{itemize}\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  text
+\end{itemize}\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  free
+\end{itemize}\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+Land destination\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  land\_destination
+\end{itemize}\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  text
+\end{itemize}\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  cropland, farmland, recreational
+\end{itemize}\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+Grassland type\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  primary\_grassland
+\end{itemize}\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  numeric
+\end{itemize}\strut
+\end{minipage} & \begin{minipage}[t]{0.24\columnwidth}\raggedright\strut
+\begin{itemize}
+\tightlist
+\item
+  0/1
+\end{itemize}\strut
+\end{minipage}\tabularnewline
+\bottomrule
+\end{longtable}
+
+\subsection{Hamonizing the land-use details
+column}\label{hamonizing-the-land-use-details-column}
+
+The following adds the columns not existing yet in the DB, and export
+the template, with one row per unique value of the land-use detail
+column.\\
+This exported file is to be checked manually, in order to fill in the
+template. To help the sorting, the plots and/or dataset name is left.\\
+In a second step, it will be reintegrated to the DB, to finalize the
+harmonization
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{names}\NormalTok{(df)[}\KeywordTok{which}\NormalTok{(}\KeywordTok{names}\NormalTok{(df) }\OperatorTok{==}\StringTok{ 'Land use detail (e.g. number of cuts or years since abandonment)'}\NormalTok{)] <-}\StringTok{ "land_use_details"}
+
+\NormalTok{template_names <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{'mown'}\NormalTok{,}\StringTok{'grazed'}\NormalTok{,}\StringTok{'burnt'}\NormalTok{,}\StringTok{'fertilized'}\NormalTok{,}\StringTok{'abandoned'}\NormalTok{,}
+                    \StringTok{'natural'}\NormalTok{,}\StringTok{'other_lu'}\NormalTok{,}\StringTok{'grazing_intensity'}\NormalTok{,}\StringTok{'grazing_load'}\NormalTok{,}
+                    \StringTok{'mowing_frequency'}\NormalTok{,}\StringTok{'burning_frequency'}\NormalTok{,}
+                    \StringTok{'fertilization_intensity'}\NormalTok{,}\StringTok{'fertilization_type'}\NormalTok{,}
+                    \StringTok{'fertilization_details'}\NormalTok{,}\StringTok{'years_abandonment'}\NormalTok{,}
+                    \StringTok{'former_land_use'}\NormalTok{,}\StringTok{'grazing animal'}\NormalTok{,}\StringTok{'land_destination'}\NormalTok{,}
+                    \StringTok{'primary_grassland'}\NormalTok{)}
+
+\NormalTok{df_details <-}\StringTok{ }\NormalTok{df[}\KeywordTok{match}\NormalTok{(}\KeywordTok{unique}\NormalTok{(df}\OperatorTok{$}\NormalTok{land_use_details), df}\OperatorTok{$}\NormalTok{land_use_details),]}
+
+\ControlFlowTok{for}\NormalTok{(colname }\ControlFlowTok{in}\NormalTok{ template_names)\{}
+  \ControlFlowTok{if}\NormalTok{(}\OperatorTok{!}\NormalTok{colname }\OperatorTok{%in%}\StringTok{ }\KeywordTok{names}\NormalTok{(df_details))}
+\NormalTok{    df_details[,colname] <-}\StringTok{ }\OtherTok{NA}
+\NormalTok{\}}
+
+\NormalTok{df_details <-}\StringTok{ }\NormalTok{df_details[,}\KeywordTok{c}\NormalTok{(}\StringTok{'GrassPlot ID of plot'}\NormalTok{, }\StringTok{'land_use_details'}\NormalTok{, template_names)]}
+
+
+\KeywordTok{write_xlsx}\NormalTok{(df_details, }\DataTypeTok{path =} \KeywordTok{file.path}\NormalTok{(path_grassplot, }\StringTok{'df_details_v1.20.xlsx'}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+
+\end{document}
