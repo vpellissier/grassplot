@@ -26,6 +26,18 @@ library(kableExtra)
 library(float)
 
 path_grassplot <- './'
+
+lu_columns <- c("Land use (5 standard categories: mown, grazed, abandoned, natural grassland, NA)",
+                "Land use detail (e.g. number of cuts or years since abandonment)",
+                "Mowing (1/0)",
+                "Mowing frequency: cuts per year (2=2cut/yr; 1=1cut/yr; 0.5=1 cut/2 yr or 2 yr abandoned; 0.2=1 cut/5 yr or 5 yr abandones; 0=never mown)",
+                "Grazing (1/0)",
+                "Grazing intensity (0/1) 1= intensive grazing",
+                "Burning (1/0)",
+                "Ex arable (1/0)",
+                "Ex arable years (years since last ploughing)",
+                "Fertilized (1/0)")
+
 ```
 This report explains the steps taken to correct the land-use data.
 The masterfile used is the version 1.22, as found on December 6th 2018.
@@ -34,27 +46,32 @@ The sheet in Grassplot 1.22.xlsx containing the LU information is the sheet 'dat
 ```{r, echo = T}
 df <- readRDS(file.path(path_grassplot, 'Grassplot 1.22_Data.rds'))
 df <- df %>%
-        mutate_at(.vars = c(95:104), funs(ifelse(. %in% c('NA', '[NA]'), NA, .)))
+        mutate_at(.vars = lu_columns, funs(ifelse(. %in% c('NA', '[NA]'), NA, .)))
 initial_colnames <- colnames(df)
 ```
 
-The columns 98 (mowing frequency) and 100 (grazing intensity) are renamed as `mowing_frequency` and `grazing intensity`:
+The columns 99 (mowing frequency) and 101 (grazing intensity) are renamed as `mowing_frequency` and `grazing intensity`:
 ```{r}
 names(df)[which(names(df) %in% c('Mowing frequency: cuts per year (2=2cut/yr; 1=1cut/yr; 0.5=1 cut/2 yr or 2 yr abandoned; 0.2=1 cut/5 yr or 5 yr abandones; 0=never mown)', 'Grazing intensity (0/1) 1= intensive grazing'))] <- c('mowing_frequency', 'grazing_intensity')
 ```
 
-The column 104 (Fertilized (1/0)) should be a binary column. Yet, it contains the values `r as.character(na.omit(unique(df[,'Fertilized (1/0)'])))`, meaning that it is an intensity column. The column is thus renamed `fertilization_intensity`
+The column 105 (Fertilized (1/0)) should be a binary column. Yet, it contains the values `r as.character(na.omit(unique(df[,'Fertilized (1/0)'])))`, meaning that it is an intensity column. The column is thus renamed `fertilization_intensity`
 ```{r}
 names(df)[which(names(df) == 'Fertilized (1/0)')] <- 'fertilization_intensity'
 ```
 
-The column 103 (Ex arable years (years since last ploughing)) is renamed `years_abandonment`
+The column 104 (Ex arable years (years since last ploughing)) is renamed `years_abandonment`
 ```{r}
 names(df)[which(names(df) == 'Ex arable years (years since last ploughing)')] <- 'years_abandonment'
 ```
 
-**PRELIMINARY NOTE: there are duplicated ID in the column `Grassplot ID of plot`.
-The following ID are duplicated `r unique(df[which(duplicated(df[,3])),3])%>%pull()`**  
+```{r, echo = F}
+dup_id <- unique(df[which(duplicated(df[,'GrassPlot ID of plot'])),'GrassPlot ID of plot'])%>%
+    pull()
+```
+
+**PRELIMINARY NOTE: there are `r ifelse(length(dup_id) > 0, length(dup_id), "no")` duplicated ID in the column `Grassplot ID of plot`.
+`r ifelse(length(dup_id) > 0, paste("The following ID are duplicated", dup_id), "")`**
 
 
 # Correction of the land use column
@@ -70,7 +87,7 @@ global_land_use <- read_excel(file.path(path_grassplot, "lookup_table_LU.xlsx" )
                  sheet = 'global_land_use')
 ```
 
-The global_land_use lookup table is used to harmonize the column 95 with the new binary columns:
+The global_land_use lookup table is used to harmonize the column 96 with the new binary columns:
 ```{r}
 df <- df %>%
     left_join(global_land_use, 
@@ -109,7 +126,7 @@ The column years_abandonment contains `r length(non_num_abandonment)` non-numeri
 ## Mowing frequency
 The mowing_frequency does have non-numerical values.  
 A closer look (manual) at the master files shows that there is some information in the column 96, that can be converted into mowing_frequency.  
-The column is converted to numerical, meaning that we lose the information for now, but it will be retrieved later using the column 96.
+The column is converted to numerical, meaning that we lose the information for now, but it will be retrieved later using the column 97.
 
 ```{r}
 df$mowing_frequency <- as.numeric(df$mowing_frequency)
@@ -119,7 +136,7 @@ df$mowing_frequency <- as.numeric(df$mowing_frequency)
 
 ## Grazing intensity
 The grazing_intensity does have non-numerical values.
-The verbal descriptors `r non_num_grazing` are replaced by numerical values and the column is converted to numerical:
+The verbal descriptors `r non_num_grazing` are replaced by numerical values and the column is converted to numeric:
 
   * `overgrazing` and `high` are replaced by 1
   * `middle` is replaced by 0.5
@@ -140,7 +157,7 @@ df$grazing_intensity <- as.numeric(df$grazing_intensity)
 **Post correction check**: original number of plots with intensity - present number of plots with intensity (should be 0) = `r nb_grazing - sum(table(df$grazing_intensity)[names(table(df$grazing_intensity)) != 0])`.  
 
 ## Fertilization intensity
-The fertilization_intensity column does not have non-numerical values.  
+The fertilization_intensity column does not have non-numeric values.  
 The column is converted to numerical.  
 ```{r}
 df$fertilization_intensity <- as.numeric(df$fertilization_intensity)
@@ -148,7 +165,7 @@ df$fertilization_intensity <- as.numeric(df$fertilization_intensity)
 **Post correction check**: original number of plots with intensity - present number of plots with intensity (should be 0) = `r nb_fertilization - sum(table(df$fertilization_intensity)[names(table(df$fertilization_intensity)) != 0])`.  
 
 ## Abandonment length
-The year_abandonment column does not have non-numerical values.
+The year_abandonment column does not have non-numeric values.
 The column is converted to numeric.
 ```{r}
 df$years_abandonment <- as.numeric(df$years_abandonment)
@@ -708,10 +725,11 @@ if(length(unique_details_df) == 0){
   }
   
   for(n in seq(nrow(land_use_details))){
-    df[which(df$land_use_details %in% land_use_details[n, 'land_use_details']), names(land_use_details)] <- land_use_details[n, names(land_use_details)]
+    df[which(df$land_use_details %in% land_use_details[n, 'land_use_details']), 
+       setdiff(names(land_use_details), "GrassPlot ID of plot")] <- land_use_details[n, setdiff(names(land_use_details), "GrassPlot ID of plot")]
   }
   
-  df <- df[,c(names(df)[1:94], setdiff(names(land_use_details), 'GrassPlot ID of plot'))]
+  df <- df[,setdiff(names(df), lu_columns)]
   cat('\nA new version of the data sheet of the masterfile have been saved, called Grassplot_data_v1.22.xlsx.')
   cat('\nThis version only contains columns matching the new land-use template.')
   write_xlsx(df, 'Grassplot_data_v1.22.xlsx')
